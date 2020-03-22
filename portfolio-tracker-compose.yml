@@ -1,5 +1,5 @@
 # Docker compose file to manage all the components in the application
-#  The docker-compose app will create a "user-defined" network bridge for the applications to connect over. We just explicitly set the network mode to be clear
+#  The docker-compose app will create a "user-defined" network bridge for the applications to connect over. 
 #
 #  All Container names should be prefixed with "portfolio-tracker-" to prevent overlap with other applications
 
@@ -9,7 +9,7 @@ services:
       container_name: portfolio-tracker-influxdb
       image: influxdb
       restart: unless-stopped
-      network_mode: bridge 
+      #network_mode: bridge 
       ports:
          - "8086:8086"
       volumes:
@@ -19,7 +19,7 @@ services:
       container_name: portfolio-tracker-grafana
       image: grafana/grafana
       restart: unless-stopped
-      network_mode: bridge
+      #network_mode: bridge
       ports:
          - "3000:3000"
       user: "1000:1000"

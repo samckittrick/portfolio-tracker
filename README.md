@@ -5,10 +5,10 @@ Running with Docker Compose
 `sudo docker-compose --file portfolio-tracker-compose.yml up`
 
 Running the celery worker outside of Docker (requires docker compose ports to be exported)  
-`celery worker -A celery_worker.celery --loglevel=info`
+`env $(cat container.env | grep -v "#" | xargs) celery worker -A celery_worker.celery --loglevel=info`
 
 Running the flask app from outside Docker  
-`FLASK_APP=flaskapp.py flask run --host=0.0.0.0 --port=8000`
+`env $(cat container.env | grep -v "#" | xargs) FLASK_APP=flaskapp.py flask run --host=0.0.0.0 --port=8000`
 
 ## References
 I struggled quite a bit with structuring the application properly to avoid circular imports. Flask and Celery aren't easy to make work while you are still learning

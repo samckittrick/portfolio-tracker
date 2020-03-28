@@ -8,7 +8,8 @@ class Config:
     def __init__(self):
         self.configValues = dict()
         for v in os.environ:
-            self.configValues[v] = os.environ[v]
+            #Strip to get any whitespace that came with it. 
+            self.configValues[v] = os.environ[v].strip()
 
         celery_broker_url = 'redis://%s:6379/0' % (self.configValues['REDIS_HOSTNAME'])
         celery_result_backend = celery_broker_url

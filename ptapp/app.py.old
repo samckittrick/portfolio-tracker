@@ -1,0 +1,30 @@
+from flask import Flask, request, jsonify
+from celery import Celery
+from celery.app.control import Inspect
+from celery.signals import after_setup_logger
+import time
+import logging
+import sys
+
+@celery.task(bind=True)
+def long_task(self):
+    print("Long Task")
+    self.update_state(state='STARTED', meta={'value': "hello"})
+    time.sleep(20)
+    self.update_state(state='PROGRESS', meta={'value': "Still Working"})
+    time.sleep(20)
+    return "I Finished!"
+
+@app.route('/')
+def index():
+    print("Index")
+    task = long_task.apply_async()
+    return "This is the task you are looking for %s" % task.id
+
+@app.route('/status')
+def status():
+    taskid = request.args.get('task')
+    return long_task.AsyncResult(taskid).state
+
+if __name__ == "__main__":
+    app.run(debug=True)

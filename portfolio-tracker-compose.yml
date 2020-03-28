@@ -1,28 +1,50 @@
 # Docker compose file to manage all the components in the application
-#  The docker-compose app will create a "user-defined" network bridge for the applications to connect over. 
+#  The docker-compose app will create a "user-defined" network bridge for the applications to connect over.
 #
 #  All Container names should be prefixed with "portfolio-tracker-" to prevent overlap with other applications
 
 version: '3'
 services:
-   influxdb:
-      container_name: portfolio-tracker-influxdb
-      image: influxdb
-      restart: unless-stopped
-      #network_mode: bridge 
-      ports:
-         - "8086:8086"
-      volumes:
-         - /dockerpersist/portfolio-tracker/influxdb:/var/lib/influxdb
-
-   grafana:
-      container_name: portfolio-tracker-grafana
-      image: grafana/grafana
-      restart: unless-stopped
+   # need to set up a way to do configuration
+#   influxdb:
+#      container_name: portfolio-tracker-influxdb
+#      image: influxdb
+#      restart: unless-stopped
       #network_mode: bridge
-      ports:
-         - "3000:3000"
-      user: "1000:1000"
-      volumes:
-         - /dockerpersist/portfolio-tracker/grafana:/var/lib/grafana
+#      ports:
+#         - "8086:8086"
+#      volumes:
+#         - /dockerpersist/portfolio-tracker/influxdb:/var/lib/influxdb
 
+   # need to set up a way to do configuration
+#   mariadb:
+#     container_name: portfolio-tracker-mariadb
+#     image: mariadb
+#     restart: unless-stopped
+
+   # Need to set up a way to do configuration.
+   redis:
+     container_name: portfolio-tracker-redis
+     image: redis
+     restart: unless-stopped
+     ports:
+       - "6379:6379"
+
+#   ptapp:
+#     container_name: portfolio-tracker-flask
+#     build:
+#       context: "."
+#       dockerfile: ptapp.dockerfile
+#     ports:
+#       - "8000:8000"
+
+#   grafana:
+#      container_name: portfolio-tracker-grafana
+#      image: grafana/grafana
+#      restart: unless-stopped
+#      #network_mode: bridge
+#      ports:
+#         - "3000:3000"
+#      user: "1000:1000"
+#      volumes:
+#         - /dockerpersist/portfolio-tracker/grafana:/var/lib/grafana

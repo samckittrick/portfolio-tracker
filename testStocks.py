@@ -5,7 +5,7 @@
 import yfinance
 from influxdb import InfluxDBClient, DataFrameClient
 
-stockList = [ '^DJI', 'AAPL', 'UNP' ]
+stockList = [ '^DJI', 'AAPL', 'UNP', 'TEAM' ]
 #stockList = [ '^DJI' ]
 
 

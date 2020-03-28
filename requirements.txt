@@ -1,2 +1,6 @@
 yfinance
 influxdb
+flask
+gunicorn
+celery
+redis

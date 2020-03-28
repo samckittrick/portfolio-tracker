@@ -1,5 +1,5 @@
 # portfolio-tracker
-Application to track my stock portfolio
+Application to track my stock portfolio. Also as a python,flask,investing learning project.
 
 Running with Docker Compose  
 `sudo docker-compose --file portfolio-tracker-compose.yml up`

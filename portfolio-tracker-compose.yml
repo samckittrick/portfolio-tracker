@@ -6,21 +6,27 @@
 version: '3'
 services:
    # need to set up a way to do configuration
-#   influxdb:
-#      container_name: portfolio-tracker-influxdb
-#      image: influxdb
-#      restart: unless-stopped
+   influxdb:
+      container_name: portfolio-tracker-influxdb
+      image: influxdb
+      restart: unless-stopped
       #network_mode: bridge
-#      ports:
-#         - "8086:8086"
-#      volumes:
-#         - /dockerpersist/portfolio-tracker/influxdb:/var/lib/influxdb
+      ports:
+         - "8086:8086"
+      volumes:
+         - /dockerpersist/portfolio-tracker/influxdb:/var/lib/influxdb
 
    # need to set up a way to do configuration
-#   mariadb:
-#     container_name: portfolio-tracker-mariadb
-#     image: mariadb
-#     restart: unless-stopped
+   mariadb:
+     container_name: portfolio-tracker-mariadb
+     image: mariadb
+     restart: unless-stopped
+     env_file:
+       - container.env
+     ports:
+       - "3306:3306"
+     volumes:
+       - ${PORTFOLIO_TRACKER_DIR}/mysql:/var/lib/mysql
 
    # Need to set up a way to do configuration.
    redis:
@@ -38,13 +44,13 @@ services:
 #     ports:
 #       - "8000:8000"
 
-#   grafana:
-#      container_name: portfolio-tracker-grafana
-#      image: grafana/grafana
-#      restart: unless-stopped
-#      #network_mode: bridge
-#      ports:
-#         - "3000:3000"
-#      user: "1000:1000"
-#      volumes:
-#         - /dockerpersist/portfolio-tracker/grafana:/var/lib/grafana
+   grafana:
+      container_name: portfolio-tracker-grafana
+      image: grafana/grafana
+      restart: unless-stopped
+      #network_mode: bridge
+      ports:
+         - "3000:3000"
+      user: "1000:1000"
+      volumes:
+         - ${PORTFOLIO_TRACKER_DIR}/grafana:/var/lib/grafana

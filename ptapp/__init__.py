@@ -9,7 +9,7 @@ import logging
 import sys
 
 # We create the celery app here so that we don't need to
-celery = Celery(__name__, broker=config.CELERY_BROKER_URL)
+celery = Celery(__name__, broker=config.get('celery_broker_url'))
 
 #logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ celery = Celery(__name__, broker=config.CELERY_BROKER_URL)
 # the registration of blueprints
 def create_app(config):
     app = Flask(__name__)
-    app.config.from_object(config)
+    app.config.update(config.get_all())
     celery.conf.update(app.config)
 
     from .main_routes import main_routes

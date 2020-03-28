@@ -4,6 +4,7 @@
 from flask import Blueprint
 from .tasks import long_task
 
+# Using flask blueprints to allow for splitting up of modules
 main_routes = Blueprint('main_routes', __name__)
 
 @main_routes.route('/')

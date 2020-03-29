@@ -4,4 +4,4 @@ CREATE TABLE `symbols` (
 );
 
 /* test data */
-insert into symbols values ('aapl'),('unp');
+insert into symbols values ('aapl'),('unp'), ('^DJI'), ('IXIC') ;

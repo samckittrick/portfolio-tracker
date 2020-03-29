@@ -14,7 +14,8 @@ services:
       ports:
          - "8086:8086"
       volumes:
-         - /dockerpersist/portfolio-tracker/influxdb:/var/lib/influxdb
+         - ${PORTFOLIO_TRACKER_DIR}/influxdb:/var/lib/influxdb
+         - /home/wallace/portfolio-tracker/config:/docker-entrypoint-initdb.d
 
    # need to set up a way to do configuration
    mariadb:
@@ -22,13 +23,13 @@ services:
      image: mariadb
      restart: unless-stopped
      env_file:
-       - container.env
+       - config/container.env
      ports:
        - "3306:3306"
      volumes:
        - ${PORTFOLIO_TRACKER_DIR}/mysql:/var/lib/mysql
+       - /home/wallace/portfolio-tracker/config:/docker-entrypoint-initdb.d
 
-   # Need to set up a way to do configuration.
    redis:
      container_name: portfolio-tracker-redis
      image: redis
@@ -54,3 +55,4 @@ services:
       user: "1000:1000"
       volumes:
          - ${PORTFOLIO_TRACKER_DIR}/grafana:/var/lib/grafana
+         - /home/wallace/portfolio-tracker/config/grafana:/etc/grafana/provisioning

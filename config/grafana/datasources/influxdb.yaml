@@ -1,0 +1,17 @@
+# Config file version
+apiVersion: 1
+
+# Delete this data source if it exists before creating it
+deleteDatasources:
+  - name: InfluxDB
+    orgId: 1
+
+# Create the influxdb data data source
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    database: stockticker
+    url: http://portfolio-tracker-influxdb:8086
+    jsonData:
+      httpMode: GET

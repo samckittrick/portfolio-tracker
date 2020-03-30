@@ -14,7 +14,6 @@
     ]
   },
   "editable": true,
-  "allowUpdates": true,
   "gnetId": null,
   "graphTooltip": 0,
   "links": [],
@@ -127,14 +126,30 @@
       }
     },
     {
+      "content": "<form action=\"/d/2cRxuPrWz\" method=\"get\">\n  <label>Symbol</label>\n  <input type=\"text\" name=\"var-symbol\" /><br />\n  <input type=\"submit\" />\n</form>\n\n\n\n",
+      "datasource": null,
+      "gridPos": {
+        "h": 3,
+        "w": 7,
+        "x": 12,
+        "y": 0
+      },
+      "id": 12,
+      "mode": "markdown",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Search Symbols",
+      "type": "text"
+    },
+    {
       "columns": [],
       "datasource": "InfluxDB",
       "fontSize": "100%",
       "gridPos": {
         "h": 7,
-        "w": 3,
+        "w": 7,
         "x": 12,
-        "y": 0
+        "y": 3
       },
       "id": 8,
       "pageSize": null,
@@ -323,6 +338,22 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "content": "\n  <h3>Hello This is Scott</h3>\n \n",
+      "datasource": null,
+      "gridPos": {
+        "h": 9,
+        "w": 7,
+        "x": 12,
+        "y": 10
+      },
+      "id": 10,
+      "mode": "html",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Panel Title",
+      "type": "text"
     }
   ],
   "schemaVersion": 22,

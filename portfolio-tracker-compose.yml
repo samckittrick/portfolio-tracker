@@ -55,4 +55,4 @@ services:
       user: "1000:1000"
       volumes:
          - ${PORTFOLIO_TRACKER_DIR}/grafana:/var/lib/grafana
-         - /home/wallace/portfolio-tracker/config/grafana:/etc/grafana/provisioning
+         - /home/wallace/portfolio-tracker/config/grafana:/etc/grafana/

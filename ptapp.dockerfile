@@ -10,7 +10,7 @@ RUN apt-get update \
 
 #Copying the files instead of the module
 #fix this later.
-COPY ptapp ./
+COPY ptapp ./ptapp
 COPY config.py ./
 COPY flaskapp.py ./
 COPY celery_worker.py ./
@@ -19,6 +19,7 @@ EXPOSE 8000
 
 # using the flask server for now. Switch to guicorn later.
 # https://nickjanetakis.com/blog/dockerize-a-flask-celery-and-redis-application-with-docker-compose
+
 ENV FLASK_APP flaskapp.py
 ENV FLASK_ENV development
 CMD [ "flask", "run", "--host=0.0.0.0", "--port=8000"]

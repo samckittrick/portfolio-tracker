@@ -11,19 +11,30 @@ Running the flask app from outside Docker
 `env $(cat config/container.env | grep -v "#" | xargs) FLASK_APP=flaskapp.py flask run --host=0.0.0.0 --port=8000`
 
 ## Configuration
-Configuration takes a number of steps that will be progressively automated as I move forward.
+Configuration takes a number of steps that will be progressively automated as I move forward. In theory most of this
+ configuration will be one time and can be done with a bootstrapping script.
+
+Configuration for each service has it's own folder in the config directory.
 
 **mariadb configuration**  
-mariadb is initially configured using environment variables that are found in container.env. This will eventually be created using a bootstrap script
-Additional scripts and sql files are mounted at /docker-endpoint-initdb.d to provision the database further.  These are automatically run by the container on first launch.
+mariadb is initially configured using environment variables that are found in config/mariadb/mariadb.env. This provides the root
+password, initial user and stocks database. The variables are provided to the container by docker-compose.
+
+Additional scripts and sql files are mounted at /docker-endpoint-initdb.d to provision the database further.  These are automatically run by the container on first launch in order to create and populate the stocks database.
 
 **influxdb configuration**  
-Influxdb currently needs no configuration, but it maintains the same entrypoint feature as mariadb.
+Influxdb is configured using files in the config/influxdb directory.   
 
-**Grafana configuration**
-Grafana can be configured using a series of files in the config directory.
-[Provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/)
-[Configure Grafana Docker Image](https://grafana.com/docs/grafana/latest/installation/configure-docker/)
+Currently, I do not create a root password, user or user password. This will likely change in the future and will follow the same
+path as mariadb, using environment variables for initial configuration.
+
+Influxdb maintains the same entrypoint feature as mariadb and the configuration directory is mounted at /docker-endpoint-initdb.d
+where influxdb can read the provided scripts and iql file to create and configure the appropriate database. 
+
+**Grafana configuration**  
+Grafana can be configured using a series of files in the config directory. Preprovisioned dashboards are provided.   
++ [Provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/)  
++ [Configure Grafana Docker Image](https://grafana.com/docs/grafana/latest/installation/configure-docker/)
 
 **Previous:**  
 -------

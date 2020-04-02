@@ -14,21 +14,21 @@ services:
       ports:
          - "8086:8086"
       volumes:
-         - ${PORTFOLIO_TRACKER_DIR}/influxdb:/var/lib/influxdb
-         - /home/wallace/portfolio-tracker/config/influxdb:/docker-entrypoint-initdb.d
+         - ${PORTFOLIO_TRACKER_PERSISTENT_DIR}/influxdb:/var/lib/influxdb
+         - ${PORTFOLIO_TRACKER_DIR}/config/influxdb:/docker-entrypoint-initdb.d
 
    # need to set up a way to do configuration
-#   mariadb:
-#     container_name: portfolio-tracker-mariadb
-#     image: mariadb
-#     restart: unless-stopped
-#     env_file:
-#       - config/mariadb/mariadb.env
-#     ports:
-#       - "3306:3306"
-#     volumes:
-#       - ${PORTFOLIO_TRACKER_DIR}/mysql:/var/lib/mysql
-#       - /home/wallace/portfolio-tracker/config/mariadb:/docker-entrypoint-initdb.d
+   mariadb:
+     container_name: portfolio-tracker-mariadb
+     image: mariadb
+     restart: unless-stopped
+     env_file:
+       - ${PORTFOLIO_TRACKER_DIR}/config/mariadb/mariadb.env
+     ports:
+       - "3306:3306"
+     volumes:
+       - ${PORTFOLIO_TRACKER_PERSISTENT_DIR}/mysql:/var/lib/mysql
+       - ${PORTFOLIO_TRACKER_DIR}/config/mariadb:/docker-entrypoint-initdb.d
 
    redis:
      container_name: portfolio-tracker-redis
@@ -37,24 +37,36 @@ services:
      ports:
        - "6379:6379"
 
-#   ptapp-flask:
-#     container_name: portfolio-tracker-flask
-#     build:
-#       context: "."
-#       dockerfile: ptapp.dockerfile
-#     ports:
-#       - "8000:8000"
-#     env_file:
-#       - config/container.env
+   ptapp-flask:
+     container_name: portfolio-tracker-flask
+     build:
+       context: "."
+       dockerfile: ptapp.dockerfile
+     ports:
+       - "8000:8000"
+     volumes:
+       - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery/:/config
+     environment:
+       - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
+       - PTAPP_REDIS_PORT=6379
+       - PTAPP_INFLUXDB_HOSTNAME=portfolio-tracker-influxdb
+       - PTAPP_INFLUXDB_PORT=8086
+       - PTAPP_CONFIG=/config/flaskapp.yml
 
-#   ptapp-celery:
-#     container_name: portfolio-tracker-celery
-#     build:
-#       context: "."
-#       dockerfile: ptapp.dockerfile
-#     env_file:
-#       - config/container.env
-#     command: [ "celery", "worker", "-A", "celery_worker.celery", "--loglevel=info" ]
+   ptapp-celery:
+     container_name: portfolio-tracker-celery
+     build:
+       context: "."
+       dockerfile: ptapp.dockerfile
+     volumes:
+       - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery:/config
+     environment:
+       - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
+       - PTAPP_REDIS_PORT=6379
+       - PTAPP_INFLUXDB_HOSTNAME=portfolio-tracker-influxdb
+       - PTAPP_INFLUXDB_PORT=8086
+       - PTAPP_CONFIG=/config/flaskapp.yml
+     command: [ "celery", "worker", "-A", "celery_worker.celery", "--loglevel=info" ]
 
    grafana:
       container_name: portfolio-tracker-grafana
@@ -65,5 +77,5 @@ services:
          - "3000:3000"
       user: "1000:1000"
       volumes:
-         - ${PORTFOLIO_TRACKER_DIR}/grafana:/var/lib/grafana
-         - /home/wallace/portfolio-tracker/config/grafana:/etc/grafana/
+         - ${PORTFOLIO_TRACKER_PERSISTENT_DIR}/grafana:/var/lib/grafana
+         - ${PORTFOLIO_TRACKER_DIR}/config/grafana:/etc/grafana/

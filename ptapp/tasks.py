@@ -16,7 +16,7 @@ def long_task(self):
     time.sleep(20)
     self.update_state(state='PROGRESS', meta={'value': "Still Working"})
     time.sleep(20)
-    return current_app.config['CELERY_RESULT_VALUE']
+    return "Done!"
 
 @celery.task(bind=True)
 def updateStock_task(self, symbol):

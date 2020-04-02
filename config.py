@@ -10,6 +10,9 @@ class Config:
     This config object can read from a file and from environment variables.
     The environment variables will override the config file
 
+    The only way I could see to get a filename for a config file into here is through an environment variable.
+    We look for the name PTAPP_CONFIG set to a path
+
     Example Yaml file:
         redis:
           hostname: 192.168.0.250
@@ -25,13 +28,17 @@ class Config:
     PTAPP_REDIS_HOSTNAME - Hostname of the redis instance
     PTAPP_REDIS_PORT - port that the redis instance is listening on
     PTAPP_REDIS_DBID - database id to use in the redis database
+    PTAPP_INFLUXDB_HOSTNAME - hostname of the influxdb database
+    PTAPP_INFLUXDB_PORT - port for accessing the influxdb database
+    PTAPP_INFLUXDB_DBNAME - the name of the influxdb database
+
     """
-    def __init__(self, configFile=None):
+    def __init__(self):
 
         self.configValues = dict()
 
-        if(configFile is not None):
-            self.readConfigFile(configFile)
+        if("PTAPP_CONFIG" in os.environ.keys()):
+            self.readConfigFile(os.environ['PTAPP_CONFIG'])
 
         self.readEnvironment()
 

@@ -4,7 +4,7 @@
 from ptapp import create_app
 from config import Config
 
-config = Config("config/flaskcelery/flaskapp.yml")
+config = Config()
 
 #This is so that `flask run` can find the application
 flask = create_app(config)

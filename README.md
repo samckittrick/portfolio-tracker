@@ -29,36 +29,48 @@ Currently, I do not create a root password, user or user password. This will lik
 path as mariadb, using environment variables for initial configuration.
 
 Influxdb maintains the same entrypoint feature as mariadb and the configuration directory is mounted at /docker-endpoint-initdb.d
-where influxdb can read the provided scripts and iql file to create and configure the appropriate database. 
+where influxdb can read the provided scripts and iql file to create and configure the appropriate database.
+
+**Flask api configuration**  
+Flask and celery can be configured using two different methods. A config file or environment variables.
+The config file path is specified using the environment variable `PTAPP_CONFIG`. I think this could be changed to use a custom loader and a command line parameter, but I'm not sure yet. The config file is written in yaml.     
+Example:
+```
+redis:
+  hostname: 192.168.0.250
+  port: 6379
+  databaseId: 0
+
+influxdb:
+  hostname: 192.168.0.250
+  port: 8086
+  databaseName: stockticker
+```
+
+Environment variables provided to the application override corresponding values in the configuration file. This allows us to keep a config file for testing flask outside of docker, while providing all the hostnames and such we need through environment variables in the docker-compose file.   
+The below is a list of variables you can use:
+```
+PTAPP_REDIS_HOSTNAME - Hostname of the redis instance
+PTAPP_REDIS_PORT - port that the redis instance is listening on
+PTAPP_REDIS_DBID - database id to use in the redis database
+PTAPP_INFLUXDB_HOSTNAME - hostname of the influxdb database
+PTAPP_INFLUXDB_PORT - port for accessing the influxdb database
+PTAPP_INFLUXDB_DBNAME - the name of the influxdb database
+```
 
 **Grafana configuration**  
 Grafana can be configured using a series of files in the config directory. Preprovisioned dashboards are provided.   
 + [Provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/)  
 + [Configure Grafana Docker Image](https://grafana.com/docs/grafana/latest/installation/configure-docker/)
 
-**Previous:**  
+## Docker Compose Configuration
 -------
-Configuration happens through a series of environment variables. These are passed to containers by docker-compose. The following
-parameters exist:  
+Configuration happens through a series of environment variables. These are passed to containers by docker-compose. The following parameters exist:  
 
 **.env file** For use by docker-compose
 ```
 PORTFOLIO_TRACKER_DIR=/home/wallace/portfolio-tracker/testpersistentdir/
 ```
-
-**container.env** To be passed to containers  
-Some of this will need to be marked "do not change"
-```
-REDIS_HOSTNAME=localhost
-REDIS_PORT=6379
-REDIS_DB=0
-
-MYSQL_ROOT_PASSWORD=mysecretpass
-MYSQL_DATABASE=stocksdb
-MYSQL_USER=stocksdb_user
-MYSQL_PASSWORD=stocksdb_password
-```
-
 
 ## References
 

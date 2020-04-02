@@ -20,7 +20,10 @@ def long_task(self):
 
 @celery.task(bind=True)
 def updateStock_task(self, symbol):
-    dfClient = DataFrameClient(host='192.168.0.250', port=8086, database='stockticker')
+    hostname = current_app.config['influxdb_hostname']
+    port = current_app.config['influxdb_port']
+    database = current_app.config['influxdb_dbName']
+    dfClient = DataFrameClient(host=hostname, port=port, database=database)
 
     ticker = yfinance.Ticker(symbol)
     history = ticker.history(period='60d', interval='15m')

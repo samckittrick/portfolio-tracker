@@ -6,16 +6,16 @@
 version: '3'
 services:
    # need to set up a way to do configuration
-#   influxdb:
-#      container_name: portfolio-tracker-influxdb
-#      image: influxdb
-#      restart: unless-stopped
-#      #network_mode: bridge
-#      ports:
-#         - "8086:8086"
-#      volumes:
-#         - ${PORTFOLIO_TRACKER_DIR}/influxdb:/var/lib/influxdb
-#         - /home/wallace/portfolio-tracker/config/influxdb:/docker-entrypoint-initdb.d
+   influxdb:
+      container_name: portfolio-tracker-influxdb
+      image: influxdb
+      restart: unless-stopped
+      #network_mode: bridge
+      ports:
+         - "8086:8086"
+      volumes:
+         - ${PORTFOLIO_TRACKER_DIR}/influxdb:/var/lib/influxdb
+         - /home/wallace/portfolio-tracker/config/influxdb:/docker-entrypoint-initdb.d
 
    # need to set up a way to do configuration
 #   mariadb:
@@ -37,24 +37,33 @@ services:
      ports:
        - "6379:6379"
 
-   ptapp:
-     container_name: portfolio-tracker-flask
-     build:
-       context: "."
-       dockerfile: ptapp.dockerfile
-     ports:
-       - "8000:8000"
-     env_file:
-       - config/container.env
+#   ptapp-flask:
+#     container_name: portfolio-tracker-flask
+#     build:
+#       context: "."
+#       dockerfile: ptapp.dockerfile
+#     ports:
+#       - "8000:8000"
+#     env_file:
+#       - config/container.env
 
-#   grafana:
-#      container_name: portfolio-tracker-grafana
-#      image: grafana/grafana
-#      restart: unless-stopped
-#      #network_mode: bridge
-#      ports:
-#         - "3000:3000"
-#      user: "1000:1000"
-#      volumes:
-#         - ${PORTFOLIO_TRACKER_DIR}/grafana:/var/lib/grafana
-#         - /home/wallace/portfolio-tracker/config/grafana:/etc/grafana/
+#   ptapp-celery:
+#     container_name: portfolio-tracker-celery
+#     build:
+#       context: "."
+#       dockerfile: ptapp.dockerfile
+#     env_file:
+#       - config/container.env
+#     command: [ "celery", "worker", "-A", "celery_worker.celery", "--loglevel=info" ]
+
+   grafana:
+      container_name: portfolio-tracker-grafana
+      image: grafana/grafana
+      restart: unless-stopped
+      #network_mode: bridge
+      ports:
+         - "3000:3000"
+      user: "1000:1000"
+      volumes:
+         - ${PORTFOLIO_TRACKER_DIR}/grafana:/var/lib/grafana
+         - /home/wallace/portfolio-tracker/config/grafana:/etc/grafana/

@@ -2,7 +2,9 @@
 # Entry point for the flask server app.
 #
 from ptapp import create_app
-from config import config
+from config import Config
+
+config = Config("config/flaskcelery/flaskapp.yml")
 
 #This is so that `flask run` can find the application
 flask = create_app(config)

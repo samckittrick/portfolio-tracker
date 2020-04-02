@@ -3,13 +3,13 @@ from celery import Celery
 from celery.signals import after_setup_logger
 # The config module comes from outside the ptapp package because it is found at the level
 # of the flask app and celery worker, both of which are called from the project's root level
-from config import config
+#from config import config
 
 import logging
 import sys
 
 # We create the celery app here so that we don't need to
-celery = Celery(__name__, broker=config.get('celery_broker_url'))
+celery = Celery(__name__)
 
 #logger = logging.getLogger(__name__)
 

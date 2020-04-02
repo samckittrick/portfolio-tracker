@@ -1,0 +1,9 @@
+redis:
+  hostname: 192.168.0.250
+  port: 6379
+  databaseId: 0
+
+influxdb:
+  hostname: 192.168.0.250
+  port: 8086
+  databaseName: stockticker

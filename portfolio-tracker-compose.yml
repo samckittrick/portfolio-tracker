@@ -37,36 +37,36 @@ services:
      ports:
        - "6379:6379"
 
-   ptapp-flask:
-     container_name: portfolio-tracker-flask
-     build:
-       context: "."
-       dockerfile: ptapp.dockerfile
-     ports:
-       - "8000:8000"
-     volumes:
-       - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery/:/config
-     environment:
-       - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
-       - PTAPP_REDIS_PORT=6379
-       - PTAPP_INFLUXDB_HOSTNAME=portfolio-tracker-influxdb
-       - PTAPP_INFLUXDB_PORT=8086
-       - PTAPP_CONFIG=/config/flaskapp.yml
+#   ptapp-flask:
+#     container_name: portfolio-tracker-flask
+#     build:
+#       context: "."
+#       dockerfile: ptapp.dockerfile
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery/:/config
+#     environment:
+#       - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
+#       - PTAPP_REDIS_PORT=6379
+#       - PTAPP_INFLUXDB_HOSTNAME=portfolio-tracker-influxdb
+#       - PTAPP_INFLUXDB_PORT=8086
+#       - PTAPP_CONFIG=/config/flaskapp.yml
 
-   ptapp-celery:
-     container_name: portfolio-tracker-celery
-     build:
-       context: "."
-       dockerfile: ptapp.dockerfile
-     volumes:
-       - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery:/config
-     environment:
-       - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
-       - PTAPP_REDIS_PORT=6379
-       - PTAPP_INFLUXDB_HOSTNAME=portfolio-tracker-influxdb
-       - PTAPP_INFLUXDB_PORT=8086
-       - PTAPP_CONFIG=/config/flaskapp.yml
-     command: [ "celery", "worker", "-A", "celery_worker.celery", "--loglevel=info" ]
+#   ptapp-celery:
+#     container_name: portfolio-tracker-celery
+#     build:
+#       context: "."
+#       dockerfile: ptapp.dockerfile
+#     volumes:
+#       - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery:/config
+#     environment:
+#       - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
+#       - PTAPP_REDIS_PORT=6379
+#       - PTAPP_INFLUXDB_HOSTNAME=portfolio-tracker-influxdb
+#       - PTAPP_INFLUXDB_PORT=8086
+#       - PTAPP_CONFIG=/config/flaskapp.yml
+#     command: [ "celery", "worker", "-A", "celery_worker.celery", "--loglevel=info" ]
 
    grafana:
       container_name: portfolio-tracker-grafana

@@ -25,7 +25,7 @@ def long_task(self):
 @celery.task(bind=True)
 def updateStock_task(self, symbol):
     """ Update price information for a particular symbol"""
-    print("Updating: %s" % symbol)
+    #print("Updating: %s" % symbol)
     hostname = current_app.config['influxdb_hostname']
     port = current_app.config['influxdb_port']
     database = current_app.config['influxdb_dbName']
@@ -57,7 +57,7 @@ def updateStock_task(self, symbol):
 @celery.task(bind=True)
 def updateAllStockPrices_task(self):
     """Update price information for all symbols. """
-    print("Updating all")
+    #print("Updating all")
     hostname = current_app.config['mysql_hostname']
     port = current_app.config['mysql_port']
     username = current_app.config['mysql_username']
@@ -69,7 +69,6 @@ def updateAllStockPrices_task(self):
     stocks = db.getTrackedStocks()
 
     for s in stocks:
-        print(type(s))
         updateStock_task.apply_async(args=[s])
 
     return None

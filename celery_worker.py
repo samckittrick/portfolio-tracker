@@ -10,7 +10,7 @@ config = Config()
 schedule = {
     'updateAll': {
         'task': 'ptapp.tasks.updateAllStockPrices_task',
-        'schedule': crontab(minute="*")
+        'schedule': crontab(minute="*/15")
     }
 }
 config.setConfig('beat_schedule', schedule)

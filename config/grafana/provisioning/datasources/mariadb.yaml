@@ -1,0 +1,9 @@
+apiVersion: 1
+
+datasources:
+  - name: MariaDB
+    type: mysql
+    url: portfolio-tracker-mariadb:3306
+    database: stocksdb
+    user: stocksdb_user
+    password: stocksdb_password

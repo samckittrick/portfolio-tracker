@@ -1,6 +1,8 @@
 DROP TABLE IF EXISTS `symbols`;
 CREATE TABLE `symbols` (
-  `symbol` VARCHAR(6) NOT NULL PRIMARY KEY
+  `symbol` VARCHAR(6) NOT NULL PRIMARY KEY,
+  `companyName` VARCHAR(64) NOT NULL,
+  `exchange` VARCHAR(6) NOT NULL
 );
 
 /* test data */

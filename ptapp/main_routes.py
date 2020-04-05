@@ -2,7 +2,7 @@
 # Place to define flask routes.
 #
 from flask import Blueprint, current_app, request
-from .tasks import long_task, updateStock_task
+from .tasks import long_task, updateStock_task, updateAllStockPrices_task
 import json
 
 import yfinance
@@ -28,3 +28,8 @@ def updateStock():
     task = updateStock_task.apply_async(args=[symbol])
 
     return "Updating..."
+
+@main_routes.route('/updateall')
+def updateAllStocks():
+    task = updateAllStockPrices_task.apply_async()
+    return "Updating all"

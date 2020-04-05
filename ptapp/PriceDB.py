@@ -25,33 +25,23 @@ class PriceDB:
             'Volume': 'int'
         }
 
+    #---------------------------------------------------------
+    def __getDFConnection(self):
+        """ Get a dataframe connection object"""
+        return DataFrameClient(host=self.hostname, port=self.port, database=self.db_name)
+
+    #---------------------------------------------------------
+    def __getConnection(self):
+        """Get a normal influxdb connection"""
+        return InfluxDBClient(host=self.hostname, port=self.port, database=self.db_name)
+
     #--------------------------------------------------
-    def updateStockPrice(self, symbol):
-        """ Given a particular symbol and the price database"""
+    def updateStockPrice_Dataframe(self, symbol, frame):
+        """ Given a dataframe of data, update the price db for a specific symbol"""
 
-        # Get the most recent entry so we can download just the new information
-        latest = self.getLatestMeasurement(symbol)
-        if(latest == None):
-            currentTime = datetime.now(tz=timezone.utc)
-            start = currentTime - timedelta(days=60)
-        else:
-            timestamp = latest['time']
-            lastTime = datetime.fromtimestamp(timestamp, timezone.utc)
-            start = lastTime
-
-        print(start)
-        # Download History
-        dfClient = DataFrameClient(host=self.hostname, port=self.port, database=self.db_name)
-
-        ticker = yfinance.Ticker(symbol)
-        history = ticker.history(start=start, interval='15m')
-
-        # If there was no history
-        if(len(history.index) == 0):
-            print("No history available")
-            return None
-
-        writeable = history.astype(self.fieldTypes)
+        # Insert data frame
+        dfClient = self.__getDFConnection()
+        writeable = frame.astype(self.fieldTypes)
 
         tags = { "symbol": symbol}
 
@@ -64,7 +54,7 @@ class PriceDB:
         queryString = "select * from \"price\" where \"symbol\" = $symbol order by time desc limit 1"
         bindParams = { 'symbol': symbol }
 
-        iClient = InfluxDBClient(host=self.hostname, port=self.port, database=self.db_name)
+        iClient = self.__getConnection()
         r = iClient.query(queryString, bind_params=bindParams, epoch="s")
 
         try:

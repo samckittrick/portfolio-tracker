@@ -34,4 +34,35 @@ class StockDB:
             #Each row is a tuple, but we only have one column, so just append that first column
             symbolList.append(symbol[0])
 
+        cursor.close()
+        conn.close()
+
         return symbolList
+
+    #--------------------------------------------------------------------
+    def updateStockInfo(self, symbol, name='', exchange='' ):
+        """Update the static information about a given stock"""
+
+        query = """INSERT INTO `symbols`
+                 ( `symbol`, `companyName`, `exchange`) values
+                 (%s, %s, %s) ON DUPlICATE KEY UPDATE
+                 `companyName` = %s, `exchange`=%s"""
+
+        params = (
+            symbol,
+            name,
+            exchange,
+            name,
+            exchange
+        )
+
+        #print(params)
+
+        conn = self.__getConnection()
+        cursor = conn.cursor()
+
+        cursor.execute(query, params)
+
+        conn.commit()
+        cursor.close()
+        conn.close()

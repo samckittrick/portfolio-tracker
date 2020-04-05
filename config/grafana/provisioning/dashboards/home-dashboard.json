@@ -143,7 +143,7 @@
     },
     {
       "columns": [],
-      "datasource": "InfluxDB",
+      "datasource": "MariaDB",
       "fontSize": "100%",
       "gridPos": {
         "h": 7,
@@ -160,14 +160,6 @@
       },
       "styles": [
         {
-          "$$hashKey": "object:585",
-          "alias": "Time",
-          "align": "auto",
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "pattern": "key",
-          "type": "hidden"
-        },
-        {
           "$$hashKey": "object:586",
           "alias": "Symbol",
           "align": "center",
@@ -181,7 +173,26 @@
           "link": true,
           "linkTooltip": "Single Stock Drilldown",
           "linkUrl": "/d/2cRxuPrWz?&var-symbol=${__cell}",
-          "pattern": "value",
+          "pattern": "symbol",
+          "thresholds": [],
+          "type": "string",
+          "unit": "short"
+        },
+        {
+          "$$hashKey": "object:187",
+          "alias": "Company Name",
+          "align": "auto",
+          "colorMode": null,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "mappingType": 1,
+          "pattern": "companyName",
+          "preserveFormat": false,
           "thresholds": [],
           "type": "string",
           "unit": "short"
@@ -189,41 +200,30 @@
       ],
       "targets": [
         {
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "show tag values from price with key=\"symbol\"",
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
           "rawQuery": true,
+          "rawSql": "SELECT `symbol`, `companyName` from `symbols`;",
           "refId": "A",
-          "resultFormat": "table",
           "select": [
             [
               {
                 "params": [
                   "value"
                 ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
+                "type": "column"
               }
             ]
           ],
-          "tags": []
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
         }
       ],
       "timeFrom": null,

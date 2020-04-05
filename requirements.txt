@@ -6,3 +6,4 @@ celery
 redis
 pyyaml
 mysql-connector-python
+lxml

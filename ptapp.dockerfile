@@ -6,7 +6,7 @@ WORKDIR /
 COPY requirements.txt requirements.txt
 
 RUN apt-get update \
-   && pip install -r requirements.txt
+   && pip3 install -r requirements.txt
 
 #Copying the files instead of the module
 #fix this later.

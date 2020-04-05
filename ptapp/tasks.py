@@ -49,9 +49,22 @@ def updateStock_task(self, symbol):
     # If there was no history
     if(len(history.index) == 0):
         print("No history available")
-        return None
+    else:
+        db.updateStockPrice_Dataframe(symbol, history)
 
-    db.updateStockPrice_Dataframe(symbol, history)
+    # Update stock information
+    stockInfo = ticker.info
+    name = stockInfo['shortName']
+    exchangeCode = stockInfo['exchange']
+
+    mHostname = current_app.config['mysql_hostname']
+    mPort = current_app.config['mysql_port']
+    mUsername = current_app.config['mysql_username']
+    mPassword = current_app.config['mysql_password']
+    mDatabase = current_app.config['mysql_database']
+    stockdb = StockDB(mHostname, mPort, mDatabase, mUsername, mPassword)
+
+    stockdb.updateStockInfo(symbol, name, exchangeCode)
 
 #------------------------------------------------------------------
 @celery.task(bind=True)
@@ -72,3 +85,9 @@ def updateAllStockPrices_task(self):
         updateStock_task.apply_async(args=[s])
 
     return None
+
+@celery.task(bind=True)
+def updateAllInformation_task(self):
+    """This function is used by celerybeats to keep all information in the databases up to date."""
+
+    updateAllStockPrices_task.apply_async()

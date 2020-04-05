@@ -1,9 +1,9 @@
 DROP TABLE IF EXISTS `symbols`;
 CREATE TABLE `symbols` (
   `symbol` VARCHAR(6) NOT NULL PRIMARY KEY,
-  `companyName` VARCHAR(64) NOT NULL,
-  `exchange` VARCHAR(6) NOT NULL
+  `companyName` VARCHAR(64),
+  `exchange` VARCHAR(6)
 );
 
 /* test data */
-insert into symbols values ('aapl'),('unp'), ('^DJI'), ('IXIC') ;
+insert into symbols (`symbol`) values ('AAPL'),('UNP'), ('^DJI'), ('^IXIC') ;

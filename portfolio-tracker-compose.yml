@@ -42,10 +42,13 @@ services:
      build:
        context: "."
        dockerfile: ptapp.dockerfile
+     image: portfoliotracker_ptapp
      ports:
        - "8000:8000"
      volumes:
        - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery/:/config
+     depends_on:
+       - ptapp-celery
      environment:
        - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
        - PTAPP_REDIS_PORT=6379
@@ -60,8 +63,13 @@ services:
      build:
        context: "."
        dockerfile: ptapp.dockerfile
+     image: portfoliotracker_ptapp
      volumes:
        - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery:/config
+     depends_on:
+       - redis
+       - influxdb
+       - mariadb
      environment:
        - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
        - PTAPP_REDIS_PORT=6379
@@ -77,8 +85,14 @@ services:
      build:
        context: "."
        dockerfile: ptapp.dockerfile
+     image: portfoliotracker_ptapp
      volumes:
        - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery:/config
+     depends_on:
+       - redis
+       - influxdb
+       - mariadb
+       - ptapp-celery
      environment:
        - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
        - PTAPP_REDIS_PORT=6379

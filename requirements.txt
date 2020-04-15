@@ -1,9 +1,3 @@
 yfinance
 influxdb
-flask
-gunicorn
-celery
 redis
-pyyaml
-mysql-connector-python
-lxml

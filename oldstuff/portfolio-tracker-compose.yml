@@ -1,0 +1,118 @@
+# Docker compose file to manage all the components in the application
+#  The docker-compose app will create a "user-defined" network bridge for the applications to connect over.
+#
+#  All Container names should be prefixed with "portfolio-tracker-" to prevent overlap with other applications
+
+version: '3'
+services:
+   # need to set up a way to do configuration
+   influxdb:
+      container_name: portfolio-tracker-influxdb
+      image: influxdb
+      restart: unless-stopped
+      #network_mode: bridge
+      ports:
+         - "8086:8086"
+      volumes:
+         - ${PORTFOLIO_TRACKER_PERSISTENT_DIR}/influxdb:/var/lib/influxdb
+         - ${PORTFOLIO_TRACKER_DIR}/config/influxdb:/docker-entrypoint-initdb.d
+
+   # need to set up a way to do configuration
+   mariadb:
+     container_name: portfolio-tracker-mariadb
+     image: mariadb
+     restart: unless-stopped
+     env_file:
+       - ${PORTFOLIO_TRACKER_DIR}/config/mariadb/mariadb.env
+     ports:
+       - "3306:3306"
+     volumes:
+       - ${PORTFOLIO_TRACKER_PERSISTENT_DIR}/mysql:/var/lib/mysql
+       - ${PORTFOLIO_TRACKER_DIR}/config/mariadb:/docker-entrypoint-initdb.d
+
+   redis:
+     container_name: portfolio-tracker-redis
+     image: redis
+     restart: unless-stopped
+     ports:
+       - "6379:6379"
+
+   ptapp-flask:
+     container_name: portfolio-tracker-flask
+     build:
+       context: "."
+       dockerfile: ptapp.dockerfile
+     image: portfoliotracker_ptapp
+     ports:
+       - "8000:8000"
+     volumes:
+       - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery/:/config
+     depends_on:
+       - ptapp-celery
+     environment:
+       - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
+       - PTAPP_REDIS_PORT=6379
+       - PTAPP_INFLUXDB_HOSTNAME=portfolio-tracker-influxdb
+       - PTAPP_INFLUXDB_PORT=8086
+       - PTAPP_CONFIG=/config/flaskapp.yml
+       - PTAPP_MYSQL_HOSTNAME=portfolio-tracker-mariadb
+       - PTAPP_MYSQL_PORT=3306
+
+   ptapp-celery:
+     container_name: portfolio-tracker-celery
+     build:
+       context: "."
+       dockerfile: ptapp.dockerfile
+     image: portfoliotracker_ptapp
+     volumes:
+       - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery:/config
+     depends_on:
+       - redis
+       - influxdb
+       - mariadb
+     environment:
+       - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
+       - PTAPP_REDIS_PORT=6379
+       - PTAPP_INFLUXDB_HOSTNAME=portfolio-tracker-influxdb
+       - PTAPP_INFLUXDB_PORT=8086
+       - PTAPP_CONFIG=/config/flaskapp.yml
+       - PTAPP_MYSQL_HOSTNAME=portfolio-tracker-mariadb
+       - PTAPP_MYSQL_PORT=3306
+     command: [ "celery", "worker", "-A", "celery_worker.celery", "--loglevel=info" ]
+
+   ptapp-celerybeat:
+     container_name: portfolio-tracker-celerybeat
+     build:
+       context: "."
+       dockerfile: ptapp.dockerfile
+     image: portfoliotracker_ptapp
+     volumes:
+       - ${PORTFOLIO_TRACKER_DIR}/config/flaskcelery:/config
+     depends_on:
+       - redis
+       - influxdb
+       - mariadb
+       - ptapp-celery
+     environment:
+       - PTAPP_REDIS_HOSTNAME=portfolio-tracker-redis
+       - PTAPP_REDIS_PORT=6379
+       - PTAPP_INFLUXDB_HOSTNAME=portfolio-tracker-influxdb
+       - PTAPP_INFLUXDB_PORT=8086
+       - PTAPP_CONFIG=/config/flaskapp.yml
+       - PTAPP_MYSQL_HOSTNAME=portfolio-tracker-mariadb
+       - PTAPP_MYSQL_PORT=3306
+     command: [ "celery", "beat", "-A", "celery_worker.celery", "--schedule=/tmp/celerybeat-schedule", "--loglevel=info", "--pidfile=/tmp/celerybeat.pid" ]
+
+   grafana:
+      container_name: portfolio-tracker-grafana
+      image: grafana/grafana
+      restart: unless-stopped
+      #network_mode: bridge
+      ports:
+         - "3000:3000"
+      user: "1000:1000"
+      environment:
+        - GF_INSTALL_PLUGINS=https://github.com/ilgizar/ilgizar-candlestick-panel/archive/master.zip;ilgizar-candlestick-panel
+      volumes:
+         - ${PORTFOLIO_TRACKER_PERSISTENT_DIR}/grafana:/var/lib/grafana
+         - ${PORTFOLIO_TRACKER_DIR}/config/grafana:/etc/grafana/

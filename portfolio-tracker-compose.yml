@@ -111,6 +111,8 @@ services:
       ports:
          - "3000:3000"
       user: "1000:1000"
+      environment:
+        - GF_INSTALL_PLUGINS=https://github.com/ilgizar/ilgizar-candlestick-panel/archive/master.zip;ilgizar-candlestick-panel
       volumes:
          - ${PORTFOLIO_TRACKER_PERSISTENT_DIR}/grafana:/var/lib/grafana
          - ${PORTFOLIO_TRACKER_DIR}/config/grafana:/etc/grafana/

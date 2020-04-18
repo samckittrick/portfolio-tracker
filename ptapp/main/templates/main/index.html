@@ -3,7 +3,21 @@
     <title>Portfolio Tracker</title>
   </head>
   <body>
-    <h1>{{ text }}</h1>
-    <a href="{% url 'logout' %}">Logout</a>
+    <p>Hello {{ user.username }} </p>
+    <p><a href="{% url 'logout' %}">Logout</a></p>
+    <p><a href="admin/">Admin</a></p>
+
+    Here are the accounts that you have registered:
+    {% if accountlist %}
+      <ul>
+        {% for account in accountlist %}
+          <li>{{ account.name }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No Accounts registered</p>
+    {% endif %}
+
+
   </body>
 </html>

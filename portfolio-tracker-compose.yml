@@ -6,16 +6,16 @@
 version: '3'
 services:
    # need to set up a way to do configuration
-   influxdb:
-      container_name: portfolio-tracker-influxdb
-      image: influxdb
-      restart: unless-stopped
-      #network_mode: bridge
-      ports:
-         - "8086:8086"
-      volumes:
-         - ${PORTFOLIO_TRACKER_PERSISTENT_DIR}/influxdb:/var/lib/influxdb
-         - ${PORTFOLIO_TRACKER_DIR}/config/influxdb:/docker-entrypoint-initdb.d
+#   influxdb:
+#      container_name: portfolio-tracker-influxdb
+#      image: influxdb
+#      restart: unless-stopped
+#      #network_mode: bridge
+#      ports:
+#         - "8086:8086"
+#      volumes:
+#         - ${PORTFOLIO_TRACKER_PERSISTENT_DIR}/influxdb:/var/lib/influxdb
+#         - ${PORTFOLIO_TRACKER_DIR}/config/influxdb:/docker-entrypoint-initdb.d
 
    # need to set up a way to do configuration
    mariadb:
@@ -30,9 +30,9 @@ services:
        - ${PORTFOLIO_TRACKER_PERSISTENT_DIR}/mysql:/var/lib/mysql
        - ${PORTFOLIO_TRACKER_DIR}/config/mariadb:/docker-entrypoint-initdb.d
 
-   redis:
-     container_name: portfolio-tracker-redis
-     image: redis
-     restart: unless-stopped
-     ports:
-       - "6379:6379"
+#   redis:
+#     container_name: portfolio-tracker-redis
+#     image: redis
+#     restart: unless-stopped
+#     ports:
+#       - "6379:6379"

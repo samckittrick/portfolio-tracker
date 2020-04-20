@@ -4,8 +4,9 @@
   </head>
   <body>
     <p>Hello {{ user.username }} </p>
-    <p><a href="{% url 'logout' %}">Logout</a></p>
-    <p><a href="admin/">Admin</a></p>
+    <p><a href="{% url 'admin:logout' %}">Logout</a></p>
+    <p><a href="{% url 'admin:index' %}">Admin</a></p>
+    <p><a href="{% url 'main:uploadTransactionFile' %}">Upload Transactions</a></p>
 
     Here are the accounts that you have registered:
     {% if accountlist %}

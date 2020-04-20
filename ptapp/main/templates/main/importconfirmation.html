@@ -1,0 +1,21 @@
+<html>
+  <head><title>Portfolio Manager</title></head>
+
+  <body>
+    <h1>File Successfully Uploaded. ID: {{ id }}</h1>
+
+    <h2>File Contents</h2>
+    <ul>
+      <li>Account Id: {{ account_id }}</li>
+      <li>Institution Name: {{ institution_name }}</li>
+
+      {% if modelMatched %}
+        <li>Matched Existing Account</li>
+        <li>Matched Account: {{ existing_account }}</li>
+      {% else %}
+        <li>No Matching Account Found</li>
+      {% endif %}
+    </ul>
+
+  </body>
+</html>

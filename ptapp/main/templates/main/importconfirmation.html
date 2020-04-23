@@ -2,20 +2,39 @@
   <head><title>Portfolio Manager</title></head>
 
   <body>
-    <h1>File Successfully Uploaded. ID: {{ id }}</h1>
+    <h1>File Successfully Uploaded.</h1>
 
-    <h2>File Contents</h2>
-    <ul>
-      <li>Account Id: {{ account_id }}</li>
-      <li>Institution Name: {{ institution_name }}</li>
-
-      {% if modelMatched %}
-        <li>Matched Existing Account</li>
-        <li>Matched Account: {{ existing_account }}</li>
-      {% else %}
-        <li>No Matching Account Found</li>
-      {% endif %}
-    </ul>
+    <form action="{% url 'main:confirmupload' %}" method="post">
+      {% csrf_token %}
+      <h2>Account Information Found</h2>
+      <table border="2">
+        <tr>
+          <th>Imported Account Information</th>
+          <th>Existing Account Information</th>
+        </tr>
+        <tr>
+          <td>
+            <ul>
+              <li><b>Account Id:</b> {{ account_id }}</li>
+              <li><b>Institution:</b> {{ institution_name }}</li>
+            </ul>
+          </td>
+          <td>
+            {% if modelMatched %}
+              <ul>
+                <li><b>Account Name:</b> {{ existing_account_name }}</li>
+                <li><b>Account ID:</b> {{ existing_account_id }}</li>
+                <li><b>Institution:</b> {{ existing_account_institution }}</li>
+              </ul>
+            {% else %}
+              No Matching Account Found. Please Select one <br />
+              {{ form.as_p }}
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+      <input type="submit" value="Confirm" >
+    </form>
 
   </body>
 </html>

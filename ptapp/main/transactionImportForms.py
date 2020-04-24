@@ -31,6 +31,7 @@ class ImportConfirmationForm(forms.Form):
 
     # This field is not required because not answering indicates that it is a new account
     Account = forms.ModelChoiceField(queryset=None, empty_label="New", required=False)
+    fileHash = forms.CharField(widget=forms.HiddenInput())
 
     def __init__(self, *args, **kwargs):
         """

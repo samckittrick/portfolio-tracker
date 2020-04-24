@@ -53,6 +53,30 @@ class FileImport_FileData(models.Model):
         hash = hasher.hexdigest()
         return hash
 
+    def saveNewFile(fileHash):
+        fileEntry = FileImport_FileData.objects.get(pk=fileHash)
+        if(fileEntry.accounts.count() > 1):
+            raise Exception("Cannot yet import more than one account!")
+        elif(fileEntry.accounts.count() == 0):
+            raise Exception("File does not have any associated accounts")
+
+        account = fileEntry.accounts.first()
+        accountModel = Accounts()
+        if(account.friendlyName != ""):
+            accountModel.name = account.friendlyName
+        else:
+            accountModel.name = account.account_id
+        accountModel.account_id = account.account_id
+        accountModel.institution_name = account.institution_name
+        accountModel.institution_id = account.institution_id
+        accountModel.routing_number = account.routing_number
+        accountModel.currency_symbol = account.currency_symbol
+        accountModel.type = account.type
+        accountModel.save()
+
+        # Once we have done all the saving we need. Delete the file and it's children
+        fileEntry.delete()
+
 ########################################################
 # Temporary table storing imported account information
 ########################################################
@@ -71,4 +95,4 @@ class FileImport_AccountData(models.Model):
     balance_date = models.DateTimeField()
     currency_symbol = models.CharField(max_length=3)
     matched = models.BooleanField(default=False)
-    matched_account_id = models.ForeignKey(Accounts, on_delete=models.CASCADE, null=True)
+    matched_account_id = models.ForeignKey(Accounts, on_delete=models.CASCADE, null=True, related_name="matched_account")

@@ -18,14 +18,15 @@ class FileImporter:
         Format of parsedData object:
         [
             {
-                "account_id": "0788",
-                "routing_number": "031176110",
-                "institution_name": "Capital One Bank",
-                "institution_id": "1001",
+                "account_id": "1234",
+                "routing_number": "131345648",
+                "institution_name": "The Bank of Awesome",
+                "institution_id": "1234",
                 "account_type": "cash",
                 "currency_symbol": "USD"
             },
             ...
+            
         ]
 
     """

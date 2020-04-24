@@ -30,25 +30,26 @@ def uploadTransactionFile(request):
             if(accountModels.count() > 1):
                 raise Exception("Each file should only contain one account for now.")
 
-            model = accountModels.first()
-            
+            importedAccount = accountModels.first()
+
             renderContext = {
-                'account_id': model.account_id,
-                'institution_name': model.institution_name,
-                'modelMatched': model.matched,
+                'account_id': importedAccount.account_id,
+                'institution_name': importedAccount.institution_name,
+                'modelMatched': importedAccount.matched,
             }
 
             # If the import matches an existing account. We should show it.
-            if(model.matched):
+            if(importedAccount.matched):
+                existingAccount = importedAccount.matched_account_id
                 renderContext['existing_account_name'] = existingAccount.name
                 renderContext['existing_account_institution'] = existingAccount.institution_name
                 renderContext['existing_account_id'] = existingAccount.account_id
+                return render(request, 'main/importsuccessful.html', renderContext)
             #otherwise we need to present a list of accounts to match it to.
             else:
-                renderContext['form'] = ImportConfirmationForm()
-
-
-            return render(request,'main/importconfirmation.html', renderContext)
+                renderContext['form'] = ImportConfirmationForm({'fileHash': fileImporter.fileHash})
+                #renderContext['form'].fileHash.initial = fileImporter.fileHash
+                return render(request,'main/importconfirmation.html', renderContext)
 
         else:
             print("Invalid form")
@@ -62,4 +63,21 @@ def uploadTransactionFile(request):
 #---------------------------------------------------------------------------------------------------#
 @login_required
 def confirmUpload(request):
+
+    if request.method == 'POST':
+        form = ImportConfirmationForm(request.POST)
+        if(form.is_valid()):
+            fileHash = form.cleaned_data['fileHash']
+            Account = form.cleaned_data['Account']
+
+            if(Account == None):
+                #This must be a new account
+                FileImport_FileData.saveNewFile(fileHash)
+            else:
+                raise NotImplementedError("We don't support selecting unmatched files quite yet.")
+        else:
+            print("Invalid Form")
+            print(form.errors)
+            raise Exception("Invalid import cofirmation form recieved.")
+
     return HttpResponse("I'm not saving it yet because i'm not programmed to. but here I am. Come and fix me")

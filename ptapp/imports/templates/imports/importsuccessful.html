@@ -2,28 +2,6 @@
 
   {% block content %}
 
-    <h1>File Successfully Uploaded.</h1>
-      <h2>Account Information Found</h2>
-      <table border="2">
-        <tr>
-          <th>Imported Account Information</th>
-          <th>Existing Account Information</th>
-        </tr>
-        <tr>
-          <td>
-            <ul>
-              <li><b>Account Id:</b> {{ account_id }}</li>
-              <li><b>Institution:</b> {{ institution_name }}</li>
-            </ul>
-          </td>
-          <td>
-            <ul>
-              <li><b>Account Name:</b> {{ existing_account_name }}</li>
-              <li><b>Account ID:</b> {{ existing_account_id }}</li>
-              <li><b>Institution:</b> {{ existing_account_institution }}</li>
-            </ul>
-          </td>
-        </tr>
-      </table>
-      <a href="{% url 'main:index' %}">Home</a>
+    <h1>File Successfully Imported.</h1>
+    <a href="{% url 'main:index' %}">Home</a>
   {% endblock %}

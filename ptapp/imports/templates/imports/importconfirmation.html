@@ -1,37 +1,41 @@
 {% extends "ptapp/base.html" %}
 
   {% block content %}
-    <h1>File Successfully Uploaded.</h1>
+    <h1>Confirm Automatic Matches</h1>
 
     <form action="{% url 'imports:confirmupload' %}" method="post">
       {% csrf_token %}
+      {{ formsetManager }}
       <h2>Account Information Found</h2>
       <table border="2">
         <tr>
           <th>Imported Account Information</th>
           <th>Existing Account Information</th>
         </tr>
+        {% for a in accounts %}
         <tr>
           <td>
             <ul>
-              <li><b>Account Id:</b> {{ account_id }}</li>
-              <li><b>Institution:</b> {{ institution_name }}</li>
+              <li><b>Account Id:</b> {{ a.account_id }}</li>
+              <li><b>Institution:</b> {{ a.institution_name }}</li>
             </ul>
           </td>
           <td>
-            {% if modelMatched %}
+            {% if a.accountMatched %}
               <ul>
-                <li><b>Account Name:</b> {{ existing_account_name }}</li>
-                <li><b>Account ID:</b> {{ existing_account_id }}</li>
-                <li><b>Institution:</b> {{ existing_account_institution }}</li>
+                <li><b>Account Name:</b> {{ a.existing_account_name }}</li>
+                <li><b>Account ID:</b> {{ a.existing_account_id }}</li>
+                <li><b>Institution:</b> {{ a.existing_account_institution }}</li>
               </ul>
             {% else %}
               No Matching Account Found. Please Select one <br />
-              {{ form.as_p }}
+              {{ a.selectForm.as_p }}
             {% endif %}
           </td>
         </tr>
+        {% endfor %}
       </table>
+
       <input type="submit" value="Confirm" >
-    </form>
+     </form>
   {% endblock %}

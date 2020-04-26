@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from main.models import Accounts
 from .models import FileData, AccountData
+from .exceptions import FileImportException
 
 #######################################################
 # Class for managing file imports.
@@ -60,7 +61,7 @@ class FileImporter:
         filetype = self.getFileType(filename)
 
         if(filetype == self. FILETYPE_UNKNOWN):
-            raise Exception("Unknown Filetype")
+            raise FileImportException("Unknown Filetype")
         else:
             self.fileParser = OFXFile(fileobj = fileobj)
 
@@ -92,7 +93,7 @@ class FileImporter:
         if(len(recordsInDb) == 0):
             self.__writeFileToDb()
         elif(len(recordsInDb) > 1):
-            raise Exception("Duplicate records found!. Please remedy this before continuing.")
+            raise FileImportException("Duplicate records found!. Database integrity compromised. Please remedy this before continuing.")
         else:
             # There must already have been a file in the database. So just load it.
             self.fileData = recordsInDb[0]
@@ -177,7 +178,7 @@ class OFXFile:
         elif(fileobj != None):
             self.ofx = OfxParser.parse(fileobj)
         else:
-            raise Exception("Must specify either a filename or a file object")
+            raise FileImportException("Must specify either a filename or a file object")
 
         self.accountData = list()
 
@@ -187,11 +188,11 @@ class OFXFile:
         Map the account type to the types in the Accounts model
         """
         if(accountType == 0):
-            raise Exception("Unknown Account Type!")
+            raise FileImportException("Unknown Account Type discovered in file!")
         elif(accountType == 1):
             return Accounts.CASH_TYPE
         elif(accountType == 2):
-            raise Exception("Unsupported Account type CreditCard")
+            raise FileImportException("Unsupported Account type CreditCard")
         elif(accountType == 3):
             return Accounts.STOCK_TYPE
 

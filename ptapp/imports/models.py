@@ -12,6 +12,7 @@ class FileData(models.Model):
     filename = models.CharField(max_length=200)
     expiration = models.DateTimeField()
 
+    #--------------------------------------------------------------------------#
     def calculatefilehash(file):
         """ Calculate the hash of a file for inserting into this model"""
         hasher = hashlib.md5()
@@ -20,29 +21,14 @@ class FileData(models.Model):
         hash = hasher.hexdigest()
         return hash
 
-    def saveNewFile(fileHash):
-        fileEntry = FileData.objects.get(pk=fileHash)
-        if(fileEntry.accounts.count() > 1):
-            raise Exception("Cannot yet import more than one account!")
-        elif(fileEntry.accounts.count() == 0):
-            raise Exception("File does not have any associated accounts")
+    #--------------------------------------------------------------------------#
+    def completeImportFile(self):
+        """
+        Now that the file has been confirmed, transfer the data to the main database.
+        """
+        for a in self.accounts.all():
+            a.completeAccountImport()
 
-        account = fileEntry.accounts.first()
-        accountModel = Accounts()
-        if(account.friendlyName != ""):
-            accountModel.name = account.friendlyName
-        else:
-            accountModel.name = account.account_id
-        accountModel.account_id = account.account_id
-        accountModel.institution_name = account.institution_name
-        accountModel.institution_id = account.institution_id
-        accountModel.routing_number = account.routing_number
-        accountModel.currency_symbol = account.currency_symbol
-        accountModel.type = account.type
-        accountModel.save()
-
-        # Once we have done all the saving we need. Delete the file and it's children
-        fileEntry.delete()
 
 ########################################################
 # Temporary table storing imported account information
@@ -62,4 +48,23 @@ class AccountData(models.Model):
     balance_date = models.DateTimeField()
     currency_symbol = models.CharField(max_length=3)
     matched = models.BooleanField(default=False)
-    matched_account_id = models.ForeignKey(Accounts, on_delete=models.CASCADE, null=True, related_name="matched_account")
+    matched_account_id = models.ForeignKey(Accounts, on_delete=models.PROTECT, null=True, related_name="matched_account")
+
+    #--------------------------------------------------------------------------#
+    def completeAccountImport(self):
+        if(self.matched):
+            print("WARNING: Not updating matched account info. Need to decide how to do this")
+        else:
+            print("Unmatched")
+            accountModel = Accounts()
+            if(self.friendlyName != ""):
+                accountModel.name = self.friendlyName
+            else:
+                accountModel.name = self.account_id
+            accountModel.account_id = self.account_id
+            accountModel.institution_name = self.institution_name
+            accountModel.institution_id = self.institution_id
+            accountModel.routing_number = self.routing_number
+            accountModel.currency_symbol = self.currency_symbol
+            accountModel.type = self.type
+            accountModel.save()

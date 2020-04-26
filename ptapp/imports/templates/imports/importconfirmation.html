@@ -3,7 +3,7 @@
   {% block content %}
     <h1>File Successfully Uploaded.</h1>
 
-    <form action="{% url 'main:confirmupload' %}" method="post">
+    <form action="{% url 'imports:confirmupload' %}" method="post">
       {% csrf_token %}
       <h2>Account Information Found</h2>
       <table border="2">

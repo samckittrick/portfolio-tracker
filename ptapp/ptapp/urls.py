@@ -20,5 +20,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     # The Main app is evaluated last so that the previous ones aren't mistakenly thought to be part of the main app
-    path('', include('main.urls'))
+    path('', include('main.urls')),
+    path('import/', include('imports.urls'))
 ]

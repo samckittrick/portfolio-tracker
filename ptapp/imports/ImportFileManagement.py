@@ -5,7 +5,8 @@ from datetime import datetime, timezone, timedelta
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import FileImport_FileData, FileImport_AccountData, Accounts
+from main.models import Accounts
+from .models import FileImport_FileData, FileImport_AccountData
 
 #######################################################
 # Class for managing file imports.
@@ -26,7 +27,7 @@ class FileImporter:
                 "currency_symbol": "USD"
             },
             ...
-            
+
         ]
 
     """

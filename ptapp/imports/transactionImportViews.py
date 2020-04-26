@@ -9,8 +9,19 @@ from datetime import datetime, timezone, timedelta
 import hashlib
 
 from .ImportFileManagement import FileImporter
-from .models import FileImport_FileData, FileImport_AccountData, Accounts
+from main.models import Accounts
+from .models import FileImport_FileData, FileImport_AccountData
 from .transactionImportForms import TransactionFileUploadForm, ImportConfirmationForm
+
+#--------------------------------------------------------------------------------------#
+def renderErrorPage(request, errorText):
+    """
+    Renders and returns an error page to be displayed to the user
+
+    @param request: django.http.HTTPRequest - The context of the http request
+    @param errorText: string - The text of the error to display
+    """
+    return render(request, 'imports/importerror.html', { 'errorText': errorText } )
 
 #--------------------------------------------------------------------------------------#
 @login_required
@@ -23,8 +34,11 @@ def uploadTransactionFile(request):
             file = request.FILES['importFile']
             filename = file.name
 
+            #try:
             fileImporter = FileImporter(filename, file)
             fileImporter.importFile()
+            #except Exception as e:
+            #    return renderErrorPage(request, str(e))
 
             accountModels = fileImporter.fileData.accounts
             if(accountModels.count() > 1):
@@ -44,12 +58,12 @@ def uploadTransactionFile(request):
                 renderContext['existing_account_name'] = existingAccount.name
                 renderContext['existing_account_institution'] = existingAccount.institution_name
                 renderContext['existing_account_id'] = existingAccount.account_id
-                return render(request, 'main/importsuccessful.html', renderContext)
+                return render(request, 'imports/importsuccessful.html', renderContext)
             #otherwise we need to present a list of accounts to match it to.
             else:
                 renderContext['form'] = ImportConfirmationForm({'fileHash': fileImporter.fileHash})
                 #renderContext['form'].fileHash.initial = fileImporter.fileHash
-                return render(request,'main/importconfirmation.html', renderContext)
+                return render(request,'imports/importconfirmation.html', renderContext)
 
         else:
             print("Invalid form")
@@ -58,7 +72,7 @@ def uploadTransactionFile(request):
 
     else:
         form = TransactionFileUploadForm()
-        return render(request, 'main/uploadTransactionFile.html', { 'form': form })
+        return render(request, 'imports/uploadTransactionFile.html', { 'form': form })
 
 #---------------------------------------------------------------------------------------------------#
 @login_required

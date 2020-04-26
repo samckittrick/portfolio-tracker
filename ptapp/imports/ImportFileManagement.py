@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 from django.core.exceptions import ObjectDoesNotExist
 
 from main.models import Accounts
-from .models import FileImport_FileData, FileImport_AccountData
+from .models import FileData, AccountData
 
 #######################################################
 # Class for managing file imports.
@@ -64,7 +64,7 @@ class FileImporter:
         else:
             self.fileParser = OFXFile(fileobj = fileobj)
 
-        self.fileHash = FileImport_FileData.calculatefilehash(fileobj)
+        self.fileHash = FileData.calculatefilehash(fileobj)
 
     #---------------------------------------------------------------------------#
     def getFileType(self, filename):
@@ -88,7 +88,7 @@ class FileImporter:
         file already exists and if not. do the import.
         """
 
-        recordsInDb = FileImport_FileData.objects.filter(pk=self.fileHash)
+        recordsInDb = FileData.objects.filter(pk=self.fileHash)
         if(len(recordsInDb) == 0):
             self.__writeFileToDb()
         elif(len(recordsInDb) > 1):
@@ -110,7 +110,7 @@ class FileImporter:
         parsedData = self.__parseFile()
 
         #Write the data about the file itself
-        self.fileData = FileImport_FileData()
+        self.fileData = FileData()
         self.fileData.fileid = self.fileHash
         self.fileData.filename = self.filename
         self.fileData.expiration = datetime.now(timezone.utc) + timedelta(days=self.fileExpiration)
@@ -118,7 +118,7 @@ class FileImporter:
 
         #Write account information
         for account in parsedData:
-            model = FileImport_AccountData()
+            model = AccountData()
             model.file = self.fileData
             model.account_id = account['account_id']
             model.routing_number = account['routing_number']

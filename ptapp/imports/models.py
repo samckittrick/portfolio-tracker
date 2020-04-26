@@ -7,7 +7,7 @@ from main.models import Accounts
 ###############################################################
 # Temporary table for storing information about imported files
 ###############################################################
-class FileImport_FileData(models.Model):
+class FileData(models.Model):
     fileid = models.CharField(max_length=32, primary_key=True)
     filename = models.CharField(max_length=200)
     expiration = models.DateTimeField()
@@ -21,7 +21,7 @@ class FileImport_FileData(models.Model):
         return hash
 
     def saveNewFile(fileHash):
-        fileEntry = FileImport_FileData.objects.get(pk=fileHash)
+        fileEntry = FileData.objects.get(pk=fileHash)
         if(fileEntry.accounts.count() > 1):
             raise Exception("Cannot yet import more than one account!")
         elif(fileEntry.accounts.count() == 0):
@@ -47,10 +47,10 @@ class FileImport_FileData(models.Model):
 ########################################################
 # Temporary table storing imported account information
 ########################################################
-class FileImport_AccountData(models.Model):
+class AccountData(models.Model):
 
     #need some id to idendtify the upload.
-    file = models.ForeignKey(FileImport_FileData, on_delete=models.CASCADE, related_name="accounts")
+    file = models.ForeignKey(FileData, on_delete=models.CASCADE, related_name="accounts")
 
     friendlyName = models.CharField(max_length = 200)
     account_id = models.CharField(max_length=22)

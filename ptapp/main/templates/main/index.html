@@ -1,12 +1,5 @@
-<html>
-  <head>
-    <title>Portfolio Tracker</title>
-  </head>
-  <body>
-    <p>Hello {{ user.username }} </p>
-    <p><a href="{% url 'admin:logout' %}">Logout</a></p>
-    <p><a href="{% url 'admin:index' %}">Admin</a></p>
-    <p><a href="{% url 'main:uploadTransactionFile' %}">Upload Transactions</a></p>
+{% extends "ptapp/base.html" %}
+  {% block content %}
 
     Here are the accounts that you have registered:
     {% if accountlist %}
@@ -19,6 +12,4 @@
       <p>No Accounts registered</p>
     {% endif %}
 
-
-  </body>
-</html>
+  {% endblock %}

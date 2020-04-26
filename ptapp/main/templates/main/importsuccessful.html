@@ -1,7 +1,7 @@
-<html>
-  <head><title>Portfolio Manager</title></head>
+{% extends "ptapp/base.html" %}
 
-  <body>
+  {% block content %}
+
     <h1>File Successfully Uploaded.</h1>
       <h2>Account Information Found</h2>
       <table border="2">
@@ -26,6 +26,4 @@
         </tr>
       </table>
       <a href="{% url 'main:index' %}">Home</a>
-
-  </body>
-</html>
+  {% endblock %}

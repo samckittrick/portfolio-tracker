@@ -1,11 +1,10 @@
-<html>
-  <head><title>PortfolioTracker</title></head>
-  <body>
+{% extends "ptapp/base.html" %}
+
+  {% block content %}
     <h2>Upload a QFX File</h2>
     <form action="{% url 'main:uploadTransactionFile' %}" method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form.as_p }}
       <input type="submit" value="submit" />
     </form>
-  </body>
-</html>
+  {% endblock %}

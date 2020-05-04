@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 from django.core.exceptions import ObjectDoesNotExist
 
 from main.models import Accounts
-from .models import FileData, AccountData
+from .models import FileData, AccountData, CashTransaction
 from .exceptions import FileImportException
 
 #######################################################
@@ -121,22 +121,39 @@ class FileImporter:
         for account in parsedData:
             model = AccountData()
             model.file = self.fileData
+            model.type = account['type']
             model.account_id = account['account_id']
             model.routing_number = account['routing_number']
             model.institution_name = account['institution_name']
             model.institution_id = account['institution_id']
             model.currency_symbol = account['currency_symbol']
-            model.balance = 0.00
-            model.balance_date = datetime.now()
+            model.balance = account['balance']
+            model.balance_date = account['balance_date']
 
             #Match it with an existing account
             match = self.matchAccountWithExisting(model.account_id, model.institution_id)
             if(match == None):
+                print("Model not matched in import")
                 model.matched = False
             else:
+                print("Model matched in import")
                 model.matched = True
                 model.matched_account_id = match
             model.save()
+
+            if(account['type'] == Accounts.CASH_TYPE):
+                # Start saving transactions
+                for t in account['transactions']:
+                    transactionModel = CashTransaction()
+                    transactionModel.date = t['date']
+                    transactionModel.amount = t['amount']
+                    transactionModel.ftid = t['transactionId']
+                    transactionModel.memo = t['memo']
+                    transactionModel.account = model
+                    transactionModel.save()
+            else:
+                raise FileImportException("Unsupported account type at transaction import")
+
 
     #--------------------------------------------------------------------------#
     @staticmethod
@@ -207,13 +224,39 @@ class OFXFile:
 
         for account in self.ofx.accounts:
 
+            accountType = self.mapAccountType(account.type)
+
             self.accountData.append( {
+                'type': accountType,
                 'account_id': account.account_id,
                 'routing_number': account.routing_number,
                 'institution_name': account.institution.organization,
                 'institution_id': account.institution.fid,
-                'account_type': self.mapAccountType(account.type),
-                'currency_symbol': account.curdef
+                'account_type': accountType,
+                'currency_symbol': account.curdef,
+                'balance': account.statement.balance,
+                'balance_date': account.statement.balance_date,
+                'transactions': self.parseTransactions(account, accountType)
             })
 
         return self.accountData
+
+    #--------------------------------------------------------------------------#
+    def parseTransactions(self, account, accountType):
+
+        if(accountType != Accounts.CASH_TYPE):
+            raise FileImportException("We don't support this account type yet")
+
+        stmt = account.statement
+
+        transactions = list()
+        for tran in stmt.transactions:
+            transaction = {
+                'date': tran.date,
+                'amount': tran.amount,
+                'transactionId': tran.id,
+                'memo': tran.memo,
+            }
+            transactions.append(transaction)
+
+        return transactions

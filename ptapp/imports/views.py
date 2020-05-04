@@ -88,6 +88,9 @@ def renderConfirmationPage(request, fileImporter):
 #--------------------------------------------------------------------------------------#
 @login_required
 def uploadTransactionFile(request):
+    """
+    Present the form for uploading a file with transaction information, parse it and respond
+    """
     if request.method == 'POST':
         form = TransactionFileUploadForm(request.POST, request.FILES)
         if(form.is_valid()):
@@ -116,12 +119,13 @@ def uploadTransactionFile(request):
 #---------------------------------------------------------------------------------------------------#
 @login_required
 def confirmUpload(request):
-
+    """
+    Receive the match confirmation form and save the data into the database
+    """
     if request.method == 'POST':
         ImportConfirmationFormset = formset_factory(ImportConfirmationForm, extra=0)
         formset = ImportConfirmationFormset(request.POST)
         if(formset.is_valid()):
-
             fileHashList = list()
 
             # For each unmatched item in the temporary database, update the match
@@ -134,8 +138,10 @@ def confirmUpload(request):
                 Account = form.cleaned_data['Account']
 
                 dbEntry = FileData.objects.get(pk=fileHash).accounts.get(account_id=account_id)
-                dbEntry.matched_account_id = Account
-                dbEntry.matched = True
+                if(Account is not None):
+                    dbEntry.matched_account_id = Account
+                    dbEntry.matched = True
+
                 dbEntry.save()
 
             # For each file that is being confirmed.

@@ -1,15 +1,18 @@
 {% extends "ptapp/base.html" %}
   {% block content %}
 
-    Here are the accounts that you have registered:
-    {% if accountlist %}
-      <ul>
-        {% for account in accountlist %}
-          <li>{{ account.name }}</li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No Accounts registered</p>
-    {% endif %}
-
+  <div class="container m-3">
+    <div class="card">
+      <div class="card-header">Registered Accounts</div>
+      <div class="card-body">
+        {% if accountlist %}
+          <ul class="card-text">
+            {% for account in accountlist %}
+              <li>{{ account.name }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No Accounts registered</p>
+        {% endif %}
+  </div>
   {% endblock %}

@@ -1,6 +1,7 @@
 from django.db import models
 import hashlib
 
+import main
 from main.models import Accounts
 
 # Create your models here.
@@ -54,6 +55,8 @@ class AccountData(models.Model):
     def completeAccountImport(self):
         if(self.matched):
             print("WARNING: Not updating matched account info. Need to decide how to do this")
+            accountModel = self.matched_account_id
+            print(accountModel)
         else:
             print("Unmatched")
             accountModel = Accounts()
@@ -67,4 +70,33 @@ class AccountData(models.Model):
             accountModel.routing_number = self.routing_number
             accountModel.currency_symbol = self.currency_symbol
             accountModel.type = self.type
-            accountModel.save()
+
+        # Update balance of matched or unmatched account
+        accountModel.balance = self.balance
+        accountModel.balance_date = self.balance_date
+        accountModel.save()
+
+        # Whether we matched or not, we also need to import transaction
+        for t in self.transactions.all():
+            t.completeTransactionImport(accountModel)
+
+################################################################################
+# Temporary table for storing imported  Cash Transactions
+################################################################################
+class CashTransaction(models.Model):
+
+    account = models.ForeignKey(AccountData, on_delete=models.CASCADE, related_name="transactions")
+
+    date = models.DateTimeField()
+    amount = models.FloatField()
+    memo = models.CharField(max_length=255)
+    ftid = models.CharField(max_length=255)
+
+    def completeTransactionImport(self, accountObject):
+        cashTransModel = main.models.CashTransaction()
+        cashTransModel.account = accountObject
+        cashTransModel.date = self.date
+        cashTransModel.amount = self.amount
+        cashTransModel.memo = self.memo
+        cashTransModel.ftid = self.ftid
+        cashTransModel.save()

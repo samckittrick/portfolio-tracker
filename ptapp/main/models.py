@@ -24,6 +24,7 @@ class Accounts(models.Model):
     routing_number = models.CharField(max_length=9)
     currency_symbol = models.CharField(max_length=3)
     type = models.CharField(max_length=6, choices = typeChoices, default=CASH_TYPE)
+    balance = models.DecimalField(max_digits=13, decimal_places=2)
 
     def __str__(self):
         return "%s at %s" % (self.name, self.institution_name)
@@ -34,3 +35,23 @@ class Accounts(models.Model):
 class AccountAliases(models.Model):
     account = models.ForeignKey(Accounts, on_delete=models.CASCADE)
     alias = models.CharField(max_length=200)
+
+################################################################################
+# CashTransaction
+################################################################################
+class CashTransaction(models.Model):
+
+    account = models.ForeignKey(Accounts, on_delete=models.CASCADE, related_name="transactions")
+
+    date = models.DateTimeField()
+    amount = models.FloatField()
+    memo = models.CharField(max_length = 255)
+    ftid = models.CharField(max_length = 255)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields = [ 'account', 'ftid' ], name="unique transaction")
+        ]
+
+    def __str__(self):
+        return "%s : %s : %s" % (self.ftid, self.memo, self.amount)

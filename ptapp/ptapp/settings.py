@@ -86,6 +86,13 @@ DATABASES = {
     }
 }
 
+# InfluxDB DATABASES
+# The django ORM doesn't support influxdb so we use Influxable
+INFLUXDB_DATABASE = {
+    'hostname': 'http://192.168.0.250:8086',
+    'database': 'transactions'
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

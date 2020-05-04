@@ -1,5 +1,5 @@
 yfinance
-influxdb
 redis
 mysqlclient
 ofxparse
+influxable

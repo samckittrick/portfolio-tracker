@@ -1,52 +1,34 @@
 {% extends "ptapp/base.html" %}
   {% block content %}
+  <!-- Graph Data -->
+  {{ networth_breakdown_list|json_script:"networth_breakdown_list" }}
 
   <div class="container m-3">
-    <div class="card">
-      <div class="card-header">Registered Accounts</div>
-      <div class="card-body">
-        {% if accountlist %}
-          <ul class="list-group">
-            {% for account in accountlist %}
-              <li class="list-group-item">{{ account.name }} - ( {{ account.balance}})</li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p>No Accounts registered</p>
-        {% endif %}
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">Breakdown</div>
-      <div class="card-body">
-        <canvas id="myChart" width="400" height="400"></canvas>
+    <div class="row">
+      <div class="card col-sm">
+        <div class="card-header">Registered Accounts - {{ netWorth }}</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm">
+              {% if accountlist %}
+                <ul class="list-group">
+                  {% for account in accountlist %}
+                    <li class="list-group-item">{{ account.name }} - ( {{ account.balance}})</li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p>No Accounts registered</p>
+              {% endif %}
+            </div>
+            <div class="col-sm">
+              <canvas id="myChart" width="300" height="300"></canvas>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <script>
-  var ctx = document.getElementById('myChart').getContext('2d');
-  var myChart = new Chart(ctx, {
-      type: 'pie',
-      data: {
-          labels: [ 'CD', 'S and G' ],
-          datasets: [{
-              label: 'Value',
-              data: [ 4285.95, 10172.26 ],
-              backgroundColor: [
-                  'rgba(255, 99, 132, 1.0)',
-                  'rgba(54, 162, 235, 0.2)'
-              ],
-              borderColor: [
-                  'rgba(255, 99, 132, 1)',
-                  'rgba(54, 162, 235, 1)'
-              ],
-              borderWidth: 1
-          }]
-      },
-      options: {
-          responsive: false
-      }
-  });
+      createAccountbreakdownChart('myChart', parseDjangoJSONDump('networth_breakdown_list'));
   </script>
   {% endblock %}

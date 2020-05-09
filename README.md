@@ -1,10 +1,10 @@
 # portfolio-tracker
 Application to track my stock portfolio. Also as a python,flask,investing learning project.
 
-Running with Docker Compose  
+**Running with Docker Compose**  
 `sudo docker-compose --file portfolio-tracker-compose.yml up`
 
-Running the Django App Separately
+**Running the Django App Separately**  
 ```
 wallace@grommit:~/portfolio-tracker$ source venv/bin/activate
 (venv) wallace@grommit:~/portfolio-tracker$ cd ptapp
@@ -49,3 +49,6 @@ Configuration happens through a series of environment variables. These are passe
 ```
 PORTFOLIO_TRACKER_DIR=/home/wallace/portfolio-tracker/testpersistentdir/
 ```
+
+## Building Bootstrap with custom themes
+In order to build a custom themed bootstrap, I place `custom.scss` in the boostrap directory. Then I modify the `css-compile` task in `packages.json` to point to custom.css instead of bootstrap.css. Once you run `npm run dist` or `npm run css` the resultant css and minified css files are in the dist directory.

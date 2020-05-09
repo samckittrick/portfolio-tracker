@@ -25,6 +25,7 @@ class Accounts(models.Model):
     currency_symbol = models.CharField(max_length=3)
     type = models.CharField(max_length=6, choices = typeChoices, default=CASH_TYPE)
     balance = models.DecimalField(max_digits=13, decimal_places=2)
+    accountActive = models.BooleanField(default=True)
 
     def __str__(self):
         return "%s at %s" % (self.name, self.institution_name)

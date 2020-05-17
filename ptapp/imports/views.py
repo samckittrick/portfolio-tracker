@@ -50,18 +50,21 @@ def renderConfirmationPage(request, fileImporter):
             'accountMatched': account.matched
         }
 
+        formData = {
+            'fileHash': fileImporter.fileHash,
+            'accountId': account.account_id
+        }
         # If the import matches an existing account. We should show it.
         if(account.matched):
             existingAccount = account.matched_account_id
             renderAccount['existing_account_name'] = existingAccount.name
             renderAccount['existing_account_id'] = existingAccount.account_id
             renderAccount['existing_account_institution'] = existingAccount.institution_name
-        # If we didn't make the match, then we should give a form to select an account
-        else:
-            formsetInitialData.append({
-            'fileHash': fileImporter.fileHash,
-            'accountId': account.account_id
-            })
+
+            formData['Account'] = existingAccount
+
+        # Add this initial data to the form
+        formsetInitialData.append(formData)
 
         renderContext['accounts'].append(renderAccount)
 

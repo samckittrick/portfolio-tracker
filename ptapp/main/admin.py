@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Accounts, AccountAliases, CashTransaction
+from .models import Accounts, AccountAliases, CashAccounts, CashTransaction
 
 # Register your models here.
 class AccountAliasInLine(admin.StackedInline):
@@ -11,3 +11,4 @@ class AccountsAdmin(admin.ModelAdmin):
 
 admin.site.register(Accounts, AccountsAdmin)
 admin.site.register(CashTransaction)
+admin.site.register(CashAccounts)

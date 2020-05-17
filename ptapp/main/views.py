@@ -12,12 +12,18 @@ def index(request):
 
     # Build out the structure needed for the networth breakdown chart
     networth_breakdown_list = { 'labels': list(), 'data': list() }
+    # Build out the structure needed for the table of accounts
+    account_list_display = list()
     for a in accountlist:
-        networth_breakdown_list['labels'].append(a.name)
-        networth_breakdown_list['data'].append(a.balance)
+        name = a.name
+        value = a.getValue()
+
+        account_list_display.append({'name': name, 'balance': value})
+        networth_breakdown_list['labels'].append(name)
+        networth_breakdown_list['data'].append(value)
 
     context = {
-        'accountlist': accountlist,
+        'accountlist': account_list_display,
         'netWorth': netWorth,
         'networth_breakdown_list': networth_breakdown_list
     }

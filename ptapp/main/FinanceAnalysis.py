@@ -15,6 +15,6 @@ def getNetWorth():
 
     accountList = Accounts.objects.filter(Q(accountActive=True), Q(type=Accounts.CASH_TYPE) | Q(type=Accounts.CD_TYPE))
     for a in accountList:
-        net_worth = net_worth + a.balance
+        net_worth = net_worth + a.getValue()
 
     return net_worth

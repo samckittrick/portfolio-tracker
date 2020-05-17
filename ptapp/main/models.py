@@ -24,25 +24,58 @@ class Accounts(models.Model):
     routing_number = models.CharField(max_length=9)
     currency_symbol = models.CharField(max_length=3)
     type = models.CharField(max_length=6, choices = typeChoices, default=CASH_TYPE)
-    balance = models.DecimalField(max_digits=13, decimal_places=2)
     accountActive = models.BooleanField(default=True)
 
+    # ------------------------------------------------------------------------
     def __str__(self):
         return "%s at %s" % (self.name, self.institution_name)
 
+    #-------------------------------------------------------------------------
+    def getSubclass(self):
+        """
+        return an instance of the correct subclass according to the account type
+        This is based on multi table inheritance
+        https://docs.djangoproject.com/en/3.0/topics/db/models/#multi-table-inheritance
+        """
+        if((self.type == self.CASH_TYPE) or (self.type == self.CD_TYPE)):
+            return self.cashaccounts
+        else:
+            raise NotImplementedError()
+
+    #--------------------------------------------------------------------------
+    def getValue(self):
+        """
+        Get the value of this account as calculated by its subclass
+        """
+        return self.getSubclass().calculateValue()
+
+    #--------------------------------------------------------------------------
+    def calculateValue(self):
+        raise NotImplementedError("Cannot calculate value on Account class")
+
 ##############################################
-#Store any aliases that an account might have
+# AccountAliases - Store any aliases that an account might have
 ##############################################
 class AccountAliases(models.Model):
     account = models.ForeignKey(Accounts, on_delete=models.CASCADE)
     alias = models.CharField(max_length=200)
 
 ################################################################################
-# CashTransaction
+# CashAccounts - Subclass for cash accounts specifically
+################################################################################
+class CashAccounts(Accounts):
+    balance = models.DecimalField(max_digits=13, decimal_places=2)
+
+    #--------------------------------------------------------------------------#
+    def calculateValue(self):
+        return self.balance
+
+################################################################################
+# CashTransaction - Specific form of transaction representing a cash transaction
 ################################################################################
 class CashTransaction(models.Model):
 
-    account = models.ForeignKey(Accounts, on_delete=models.CASCADE, related_name="transactions")
+    account = models.ForeignKey(CashAccounts, on_delete=models.CASCADE, related_name="transactions")
 
     date = models.DateTimeField()
     amount = models.FloatField()

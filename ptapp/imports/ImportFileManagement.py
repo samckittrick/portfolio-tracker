@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 from django.core.exceptions import ObjectDoesNotExist
 
 from main.models import Accounts
-from .models import FileData, AccountData, CashTransaction
+from .models import FileData, AccountData, CashAccountData, CashTransaction
 from .exceptions import FileImportException
 
 #######################################################
@@ -16,21 +16,6 @@ class FileImporter:
     """ Class for managing file imports. It provides an entry point.
         Give it the file and it will select the approprate import routine and
         parse the file. It also manages writing that file to the temporary database.
-
-        Format of parsedData object:
-        [
-            {
-                "account_id": "1234",
-                "routing_number": "131345648",
-                "institution_name": "The Bank of Awesome",
-                "institution_id": "1234",
-                "account_type": "cash",
-                "currency_symbol": "USD"
-            },
-            ...
-
-        ]
-
     """
 
     # List of filetypes that we support
@@ -99,16 +84,11 @@ class FileImporter:
             self.fileData = recordsInDb[0]
 
     #--------------------------------------------------------------------------#
-    def __parseFile(self):
-        return self.fileParser.parseFileData()
-
-    #--------------------------------------------------------------------------#
     def __writeFileToDb(self):
         """
         Take the parsed file and write it to the database. This is so we can come
         back to it when it is time for the user to confirm the match and any other Information
         """
-        parsedData = self.__parseFile()
 
         #Write the data about the file itself
         self.fileData = FileData()
@@ -117,42 +97,8 @@ class FileImporter:
         self.fileData.expiration = datetime.now(timezone.utc) + timedelta(days=self.fileExpiration)
         self.fileData.save()
 
-        #Write account information
-        for account in parsedData:
-            model = AccountData()
-            model.file = self.fileData
-            model.type = account['type']
-            model.account_id = account['account_id']
-            model.routing_number = account['routing_number']
-            model.institution_name = account['institution_name']
-            model.institution_id = account['institution_id']
-            model.currency_symbol = account['currency_symbol']
-            model.balance = account['balance']
-            model.balance_date = account['balance_date']
-
-            #Match it with an existing account
-            match = self.matchAccountWithExisting(model.account_id, model.institution_id)
-            if(match == None):
-                print("Model not matched in import")
-                model.matched = False
-            else:
-                print("Model matched in import")
-                model.matched = True
-                model.matched_account_id = match
-            model.save()
-
-            if(account['type'] == Accounts.CASH_TYPE):
-                # Start saving transactions
-                for t in account['transactions']:
-                    transactionModel = CashTransaction()
-                    transactionModel.date = t['date']
-                    transactionModel.amount = t['amount']
-                    transactionModel.ftid = t['transactionId']
-                    transactionModel.memo = t['memo']
-                    transactionModel.account = model
-                    transactionModel.save()
-            else:
-                raise FileImportException("Unsupported account type at transaction import")
+        # Call the file parser to read the contents of the file into the database.
+        parsedData = self.fileParser.readInsertData(self.fileData)
 
 
     #--------------------------------------------------------------------------#
@@ -214,7 +160,7 @@ class OFXFile:
             return Accounts.STOCK_TYPE
 
     #--------------------------------------------------------------------------#
-    def parseFileData(self):
+    def readInsertData(self, fileEntry):
         """ Import the data from an ofx file into a temporary table for confirmation"""
 
         # For now we will only allow one account to be present in the ofx file.
@@ -222,41 +168,60 @@ class OFXFile:
         #if(len(self.ofx.accounts) > 1):
         #    raise Exception("We did not expect to see more than one account in an OFX file!")
 
+            #Write account information
         for account in self.ofx.accounts:
-
             accountType = self.mapAccountType(account.type)
 
-            self.accountData.append( {
-                'type': accountType,
-                'account_id': account.account_id,
-                'routing_number': account.routing_number,
-                'institution_name': account.institution.organization,
-                'institution_id': account.institution.fid,
-                'account_type': accountType,
-                'currency_symbol': account.curdef,
-                'balance': account.statement.balance,
-                'balance_date': account.statement.balance_date,
-                'transactions': self.parseTransactions(account, accountType)
-            })
+            if(accountType == Accounts.CASH_TYPE ):
+                model = CashAccountData()
+            else:
+                raise NotImplementedError("Non Cashtype account detected. We don't handle that yet. ")
 
-        return self.accountData
+            model.file = fileEntry
+            model.type = accountType
+            model.account_id = account.account_id
+            model.routing_number = account.routing_number
+            model.institution_name = account.institution.organization
+            model.institution_id = account.institution.fid
+            model.currency_symbol = account.curdef
+
+            #Match it with an existing account
+            match = FileImporter.matchAccountWithExisting(model.account_id, model.institution_id)
+            if(match == None):
+                print("Model not matched in import")
+                model.matched = False
+            else:
+                print("Model matched in import")
+                model.matched = True
+                model.matched_account_id = match
+
+            # If the account type is a cash one, add the fields specific to cash accounts
+            if(accountType == Accounts.CASH_TYPE):
+                model.balance = account.statement.balance
+                model.balance_date = account.statement.balance_date
+
+            else:
+                raise FileImportException("Unsupported account type at transaction import")
+
+            model.save()
+
+            # Start saving transactions
+            if(accountType == Accounts.CASH_TYPE):
+                self.parseCashTransactions(account, model)
+            else:
+                raise NotImplementedError("Non cash type account detected. We don't handle that yet")
 
     #--------------------------------------------------------------------------#
-    def parseTransactions(self, account, accountType):
+    def parseCashTransactions(self, ofxAccount, accountDBObject):
 
-        if(accountType != Accounts.CASH_TYPE):
-            raise FileImportException("We don't support this account type yet")
+        stmt = ofxAccount.statement
 
-        stmt = account.statement
-
-        transactions = list()
         for tran in stmt.transactions:
-            transaction = {
-                'date': tran.date,
-                'amount': tran.amount,
-                'transactionId': tran.id,
-                'memo': tran.memo,
-            }
-            transactions.append(transaction)
 
-        return transactions
+            transactionModel = CashTransaction()
+            transactionModel.date = tran.date
+            transactionModel.amount = tran.amount
+            transactionModel.ftid = tran.id
+            transactionModel.memo = tran.memo
+            transactionModel.account = accountDBObject
+            transactionModel.save()

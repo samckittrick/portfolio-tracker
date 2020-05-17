@@ -2,7 +2,7 @@ from django.db import models
 import hashlib
 
 import main
-from main.models import Accounts
+from main.models import CashAccounts, Accounts
 
 # Create your models here.
 ###############################################################
@@ -45,31 +45,60 @@ class AccountData(models.Model):
     institution_name = models.CharField(max_length=200)
     institution_id = models.CharField(max_length=32)
     type = models.CharField(max_length = 6, choices = Accounts.typeChoices, default=Accounts.CASH_TYPE)
-    balance = models.DecimalField(max_digits=13, decimal_places=2)
-    balance_date = models.DateTimeField()
     currency_symbol = models.CharField(max_length=3)
     matched = models.BooleanField(default=False)
     matched_account_id = models.ForeignKey(Accounts, on_delete=models.PROTECT, null=True, related_name="matched_account")
 
+    #-------------------------------------------------------------------------
+    def getSubclass(self):
+        """
+        return an instance of the correct subclass according to the account type
+        This is based on multi table inheritance
+        https://docs.djangoproject.com/en/3.0/topics/db/models/#multi-table-inheritance
+        """
+        if((self.type == Accounts.CASH_TYPE) or (self.type == Accounts.CD_TYPE)):
+            return self.cashaccountdata
+        else:
+            raise NotImplementedError()
+
+    #--------------------------------------------------------------------------#
+    def completeAccountImport(self):
+        self.getSubclass().completeAccountImport()
+
+    #--------------------------------------------------------------------------#
+    def saveGenericAccountFields(self, accountModel):
+        """
+        Save the fields that are common to all accounts to the given Accounts object
+        """
+        if(self.friendlyName != ""):
+            accountModel.name = self.friendlyName
+        else:
+            accountModel.name = self.account_id
+        accountModel.account_id = self.account_id
+        accountModel.institution_name = self.institution_name
+        accountModel.institution_id = self.institution_id
+        accountModel.routing_number = self.routing_number
+        accountModel.currency_symbol = self.currency_symbol
+        accountModel.type = self.type
+
+################################################################################
+# CashAccountData - Temporary Specific table for cash accounts
+################################################################################
+class CashAccountData(AccountData):
+    balance = models.DecimalField(max_digits=13, decimal_places=2)
+    balance_date = models.DateTimeField()
+
     #--------------------------------------------------------------------------#
     def completeAccountImport(self):
         if(self.matched):
-            print("WARNING: Not updating matched account info. Need to decide how to do this")
-            accountModel = self.matched_account_id
-            print(accountModel)
+            print("WARNING: Not updating matched account info. Need to decide how to do this.")
+            # Get the matched account and get the right type so that we can save to it.
+            accountModel = self.matched_account_id.cashaccounts
+            print(type(accountModel))
         else:
-            print("Unmatched")
-            accountModel = Accounts()
-            if(self.friendlyName != ""):
-                accountModel.name = self.friendlyName
-            else:
-                accountModel.name = self.account_id
-            accountModel.account_id = self.account_id
-            accountModel.institution_name = self.institution_name
-            accountModel.institution_id = self.institution_id
-            accountModel.routing_number = self.routing_number
-            accountModel.currency_symbol = self.currency_symbol
-            accountModel.type = self.type
+            accountModel = CashAccounts()
+            self.saveGenericAccountFields(accountModel)
+
 
         # Update balance of matched or unmatched account
         accountModel.balance = self.balance
@@ -80,12 +109,14 @@ class AccountData(models.Model):
         for t in self.transactions.all():
             t.completeTransactionImport(accountModel)
 
+
+
 ################################################################################
 # Temporary table for storing imported  Cash Transactions
 ################################################################################
 class CashTransaction(models.Model):
 
-    account = models.ForeignKey(AccountData, on_delete=models.CASCADE, related_name="transactions")
+    account = models.ForeignKey(CashAccountData, on_delete=models.CASCADE, related_name="transactions")
 
     date = models.DateTimeField()
     amount = models.FloatField()
@@ -93,6 +124,12 @@ class CashTransaction(models.Model):
     ftid = models.CharField(max_length=255)
 
     def completeTransactionImport(self, accountObject):
+
+        cashTransModelQuerySet = main.models.CashTransaction.objects.filter(account=accountObject, ftid=self.ftid)
+        if(len(cashTransModelQuerySet) > 0):
+            print("WARNING: transaction already exists. Not saving")
+            return
+
         cashTransModel = main.models.CashTransaction()
         cashTransModel.account = accountObject
         cashTransModel.date = self.date

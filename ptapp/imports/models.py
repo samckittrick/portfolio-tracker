@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 import hashlib
 
 import main
@@ -27,8 +27,9 @@ class FileData(models.Model):
         """
         Now that the file has been confirmed, transfer the data to the main database.
         """
-        for a in self.accounts.all():
-            a.completeAccountImport()
+        with transaction.atomic():
+            for a in self.accounts.all():
+                a.completeAccountImport()
 
 
 ########################################################

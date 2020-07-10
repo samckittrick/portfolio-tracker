@@ -4,6 +4,7 @@ from django import forms
 from django.forms import formset_factory
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 
 from datetime import datetime, timezone, timedelta
 import hashlib
@@ -103,8 +104,10 @@ def uploadTransactionFile(request):
             filename = file.name
 
             try:
-                fileImporter = FileImporter(filename, file)
-                fileImporter.importFile()
+                # Make it atomic so if anything goes wrong, it will be rolled back
+                with transaction.atomic():
+                    fileImporter = FileImporter(filename, file)
+                    fileImporter.importFile()
             except FileImportException as e:
                 return renderErrorPage(request, str(e))
 

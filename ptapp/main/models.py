@@ -65,6 +65,7 @@ class AccountAliases(models.Model):
 ################################################################################
 class CashAccounts(Accounts):
     balance = models.DecimalField(max_digits=13, decimal_places=2)
+    balance_date = models.DateTimeField()
 
     #--------------------------------------------------------------------------#
     def calculateValue(self):

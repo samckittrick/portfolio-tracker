@@ -95,15 +95,17 @@ class CashAccountData(AccountData):
             print("WARNING: Not updating matched account info. Need to decide how to do this.")
             # Get the matched account and get the right type so that we can save to it.
             accountModel = self.matched_account_id.cashaccounts
-            print(type(accountModel))
         else:
             accountModel = CashAccounts()
             self.saveGenericAccountFields(accountModel)
 
 
-        # Update balance of matched or unmatched account
-        accountModel.balance = self.balance
-        accountModel.balance_date = self.balance_date
+        # Update balance of matched or unmatched account.
+        # But only if the statement date is more recent than the stored date
+        if(accountModel.balance_date < self.balance_date):
+            accountModel.balance = self.balance
+            accountModel.balance_date = self.balance_date
+            
         accountModel.save()
 
         # Whether we matched or not, we also need to import transaction

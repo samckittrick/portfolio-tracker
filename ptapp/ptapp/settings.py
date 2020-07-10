@@ -25,7 +25,7 @@ SECRET_KEY = 'y%1h-j_4pxben#!jse1gt5iy2t7$*vjcp-k^1al4tjs%x8a7vn'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [ "192.168.0.250" ]
+ALLOWED_HOSTS = [ "192.168.0.250", "grommit" ]
 
 
 # Application definition

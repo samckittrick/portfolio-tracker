@@ -3,6 +3,7 @@ import hashlib
 
 import main
 from main.models import CashAccounts, Accounts
+from main.types import InvestmentTransactionTypes, InvestmentTransactionIncomeTypes
 
 # Create your models here.
 ###############################################################
@@ -165,17 +166,19 @@ class InvestmentPosition(models.Model):
 class InvestmentTransaction(models.Model):
     account = models.ForeignKey(InvestmentAccountData, on_delete=models.CASCADE, related_name="transactions")
     ftid = models.CharField(max_length=255)
-    type = models.IntegerField(choices=main.models.InvestmentTransaction.InvestmentTransactionTypes.choices(),
-                               default = main.models.InvestmentTransaction.InvestmentTransactionTypes.BUY_OTHER
+
+    type = models.IntegerField(choices=InvestmentTransactionTypes.choices(),
+                                default = InvestmentTransactionTypes.BUY_OTHER
                                )
     tradeDate = models.DateTimeField()
     settleDate = models.DateTimeField()
     memo = models.CharField(max_length=255)
     CUSIP = models.CharField(max_length=16)
     ticker = models.CharField(max_length=8)
-    income_type = models.IntegerField(choices = main.models.InvestmentTransaction.InvestmentTransactionIncomeTypes.choices())
+    income_type = models.IntegerField(choices = InvestmentTransactionIncomeTypes.choices())
     # Depending on the broker, it's possible to hold partial shares. So we use a float
-    units = models.FloatField()
-    unit_price = models.FloatField()
-    comission = models.FloatField()
-    fees = models.FloatField()
+    units = models.FloatField(default = 0)
+    unit_price = models.FloatField(default =0)
+    comission = models.FloatField(default = 0)
+    fees = models.FloatField(default = 0)
+    total = models.FloatField(default = 0)

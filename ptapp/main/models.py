@@ -66,10 +66,10 @@ class AccountAliases(models.Model):
 ################################################################################
 class CashAccounts(Accounts):
     # The main thing we need to consider is the current balance of the account
-    balance = models.DecimalField(max_digits=13, decimal_places=2)
+    balance = models.DecimalField(max_digits=13, decimal_places=2, default=0)
     # We also need to know when the balace was updated, so only newer statements
     #  will be used to update it.
-    balance_date = models.DateTimeField()
+    balance_date = models.DateTimeField(null=True)
 
     #--------------------------------------------------------------------------#
     def calculateValue(self):
@@ -113,8 +113,8 @@ class InvestmentPosition(models.Model):
     CUSIP = models.CharField(max_length=16)
 
     # Depending on the broker, it's possible to hold partial shares. So we use a float.
-    units = models.FloatField()
-    unit_price = models.FloatField()
+    units = models.FloatField(default=0)
+    unit_price = models.FloatField(default=0)
 
 
 ################################################################################
@@ -132,10 +132,11 @@ class InvestmentTransaction(models.Model):
     CUSIP = models.CharField(max_length=16)
     ticker = models.CharField(max_length=8)
     income_type = models.IntegerField(choices = InvestmentTransactionIncomeTypes.choices())
-    units = models.FloatField()
-    unit_price = models.FloatField()
-    comission = models.FloatField()
-    fees = models.FloatField()
+    units = models.FloatField(default=0)
+    unit_price = models.FloatField(default=0)
+    comission = models.FloatField(default=0)
+    fees = models.FloatField(default=0)
+    total = models.FloatField(default=0)
 
     class Meta:
         constraints = [

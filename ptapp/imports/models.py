@@ -30,7 +30,12 @@ class FileData(models.Model):
         """
         with transaction.atomic():
             for a in self.accounts.all():
-                a.completeAccountImport()
+                fileAccount = a.getSubclass()
+                if(fileAccount.matched):
+                    mainAccountModel = fileAccount.matched_account_id
+                else:
+                    mainAccountModel = fileAccount.getNewCorrespondingModel()
+                fileAccount.completeAccountImport(mainAccountModel)
 
 
 ########################################################
@@ -64,24 +69,20 @@ class AccountData(models.Model):
             raise NotImplementedError()
 
     #--------------------------------------------------------------------------#
-    def completeAccountImport(self):
-        self.getSubclass().completeAccountImport()
-
-    #--------------------------------------------------------------------------#
-    def saveGenericAccountFields(self, accountModel):
+    def completeAccountImport(self, destinationAccount):
         """
         Save the fields that are common to all accounts to the given Accounts object
         """
         if(self.friendlyName != ""):
-            accountModel.name = self.friendlyName
+            destinationAccount.name = self.friendlyName
         else:
-            accountModel.name = self.account_id
-        accountModel.account_id = self.account_id
-        accountModel.institution_name = self.institution_name
-        accountModel.institution_id = self.institution_id
-        accountModel.routing_number = self.routing_number
-        accountModel.currency_symbol = self.currency_symbol
-        accountModel.type = self.type
+            destinationAccount.name = self.account_id
+        destinationAccount.account_id = self.account_id
+        destinationAccount.institution_name = self.institution_name
+        destinationAccount.institution_id = self.institution_id
+        destinationAccount.routing_number = self.routing_number
+        destinationAccount.currency_symbol = self.currency_symbol
+        destinationAccount.type = self.type
 
 ################################################################################
 # CashAccountData - Temporary Specific table for cash accounts
@@ -91,27 +92,26 @@ class CashAccountData(AccountData):
     balance_date = models.DateTimeField()
 
     #--------------------------------------------------------------------------#
-    def completeAccountImport(self):
-        if(self.matched):
-            print("WARNING: Not updating matched account info. Need to decide how to do this.")
-            # Get the matched account and get the right type so that we can save to it.
-            accountModel = self.matched_account_id.cashaccounts
-        else:
-            accountModel = CashAccounts()
-            self.saveGenericAccountFields(accountModel)
+    def getNewCorrespondingModel(self):
+        """Return a new empty model to be filled"""
+        return main.models.CashAccounts()
 
+    #--------------------------------------------------------------------------#
+    def completeAccountImport(self, destinationAccount):
+        #Update the generic details.
+        super().completeAccountImport(destinationAccount)
 
         # Update balance of matched or unmatched account.
         # But only if the statement date is more recent than the stored date
-        if(accountModel.balance_date < self.balance_date):
-            accountModel.balance = self.balance
-            accountModel.balance_date = self.balance_date
+        if((destinationAccount.balance_date is None) or (destinationAccount.balance_date < self.balance_date)):
+            destinationAccount.balance = self.balance
+            destinationAccount.balance_date = self.balance_date
 
-        accountModel.save()
+        destinationAccount.save()
 
         # Whether we matched or not, we also need to import transaction
         for t in self.transactions.all():
-            t.completeTransactionImport(accountModel)
+            t.completeTransactionImport(destinationAccount)
 
 ################################################################################
 # Temporary table for storing imported  Cash Transactions

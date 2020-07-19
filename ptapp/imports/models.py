@@ -46,7 +46,7 @@ class AccountData(models.Model):
     institution_name = models.CharField(max_length=200)
     institution_id = models.CharField(max_length=32)
     type = models.CharField(max_length = 6, choices = Accounts.typeChoices, default=Accounts.CASH_TYPE)
-    currency_symbol = models.CharField(max_length=3)
+    currency_symbol = models.CharField(max_length=3, default="USD")
     matched = models.BooleanField(default=False)
     matched_account_id = models.ForeignKey(Accounts, on_delete=models.PROTECT, null=True, related_name="matched_account")
 
@@ -105,14 +105,12 @@ class CashAccountData(AccountData):
         if(accountModel.balance_date < self.balance_date):
             accountModel.balance = self.balance
             accountModel.balance_date = self.balance_date
-            
+
         accountModel.save()
 
         # Whether we matched or not, we also need to import transaction
         for t in self.transactions.all():
             t.completeTransactionImport(accountModel)
-
-
 
 ################################################################################
 # Temporary table for storing imported  Cash Transactions
@@ -140,3 +138,44 @@ class CashTransaction(models.Model):
         cashTransModel.memo = self.memo
         cashTransModel.ftid = self.ftid
         cashTransModel.save()
+
+################################################################################
+# InvestmentAccount - Subclass for investment accounts specifically
+################################################################################
+class InvestmentAccountData(AccountData):
+    # We need to know when the
+    position_date = models.DateTimeField()
+
+################################################################################
+# InvestmentPositions - List of security positions for a specific account.
+###############################################################################
+class InvestmentPosition(models.Model):
+
+    account = models.ForeignKey(InvestmentAccountData, on_delete=models.CASCADE, related_name="positions")
+
+    ticker = models.CharField(max_length=8)
+    CUSIP = models.CharField(max_length=16)
+    # Depending on the broker, it's possible to hold partial shares. So we use a float.
+    units = models.FloatField()
+    unit_price = models.FloatField()
+
+################################################################################
+# InvestmentTransaction
+################################################################################
+class InvestmentTransaction(models.Model):
+    account = models.ForeignKey(InvestmentAccountData, on_delete=models.CASCADE, related_name="transactions")
+    ftid = models.CharField(max_length=255)
+    type = models.IntegerField(choices=main.models.InvestmentTransaction.InvestmentTransactionTypes.choices(),
+                               default = main.models.InvestmentTransaction.InvestmentTransactionTypes.BUY_OTHER
+                               )
+    tradeDate = models.DateTimeField()
+    settleDate = models.DateTimeField()
+    memo = models.CharField(max_length=255)
+    CUSIP = models.CharField(max_length=16)
+    ticker = models.CharField(max_length=8)
+    income_type = models.IntegerField(choices = main.models.InvestmentTransaction.InvestmentTransactionIncomeTypes.choices())
+    # Depending on the broker, it's possible to hold partial shares. So we use a float
+    units = models.FloatField()
+    unit_price = models.FloatField()
+    comission = models.FloatField()
+    fees = models.FloatField()

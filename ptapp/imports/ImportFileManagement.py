@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 from django.core.exceptions import ObjectDoesNotExist
 
 from main.models import Accounts
-from .models import FileData, AccountData, CashAccountData, CashTransaction
+from .models import FileData, AccountData, CashAccountData, CashTransaction, InvestmentAccountData, InvestmentPosition
 from .exceptions import FileImportException
 
 #######################################################
@@ -174,6 +174,8 @@ class OFXFile:
 
             if(accountType == Accounts.CASH_TYPE ):
                 model = CashAccountData()
+            elif(accountType == Accounts.STOCK_TYPE):
+                model = InvestmentAccountData()
             else:
                 raise NotImplementedError("Non Cashtype account detected. We don't handle that yet. ")
 
@@ -183,7 +185,9 @@ class OFXFile:
             model.routing_number = account.routing_number
             model.institution_name = account.institution.organization
             model.institution_id = account.institution.fid
-            model.currency_symbol = account.curdef
+            # Some QFXs don't define the currency, so we use the default.
+            if(account.curdef is not None):
+                model.currency_symbol = account.curdef
 
             #Match it with an existing account
             match = FileImporter.matchAccountWithExisting(model.account_id, model.institution_id)
@@ -195,10 +199,17 @@ class OFXFile:
                 model.matched = True
                 model.matched_account_id = match
 
+            # Start saving statement information like balance and positions.
             # If the account type is a cash one, add the fields specific to cash accounts
             if(accountType == Accounts.CASH_TYPE):
                 model.balance = account.statement.balance
                 model.balance_date = account.statement.balance_date
+            # If it's a stock type, add the fields specific to stock types
+            elif(accountType == Accounts.STOCK_TYPE):
+                model.position_date = account.statement.end_date
+
+                # get a list of securities referenced in this document
+                self.security_list = self.getStatementSecurityList(self.ofx)
 
             else:
                 raise FileImportException("Unsupported account type at transaction import")
@@ -208,16 +219,15 @@ class OFXFile:
             # Start saving transactions
             if(accountType == Accounts.CASH_TYPE):
                 self.parseCashTransactions(account, model)
+            elif(accountType == Accounts.STOCK_TYPE):
+                self.parseStockPositionData(account, model)
             else:
                 raise NotImplementedError("Non cash type account detected. We don't handle that yet")
 
     #--------------------------------------------------------------------------#
     def parseCashTransactions(self, ofxAccount, accountDBObject):
-
         stmt = ofxAccount.statement
-
         for tran in stmt.transactions:
-
             transactionModel = CashTransaction()
             transactionModel.date = tran.date
             transactionModel.amount = tran.amount
@@ -225,3 +235,40 @@ class OFXFile:
             transactionModel.memo = tran.memo
             transactionModel.account = accountDBObject
             transactionModel.save()
+
+    #--------------------------------------------------------------------------#
+    def getStatementSecurityList(self, ofxObject):
+        """ Investment account statements have a security_list entry that lists basic
+        information about securities referenced in the document. We should parse
+        this and return it as a library of objects for reference when parsing
+        transactions and positions
+
+        We create a dictionary with keys using the ticker symbol (upper case) and
+        the CUSIP id. There won't be too many, so I think it will be ok to have
+        each security appear twice.
+        """
+        security_list = dict()
+
+        for s in ofxObject.security_list:
+            print(dir(s))
+            security_list[s.uniqueid] = {
+                'uniqueId': s.uniqueid,
+                'ticker': s.ticker.upper(),
+                'name': s.name,
+                'memo': s.memo
+            }
+            security_list[s.ticker.upper()] = security_list[s.uniqueid]
+        return security_list
+
+    #--------------------------------------------------------------------------#
+    def parseStockPositionData(self, ofxAccount, accountDBObject):
+        positionList = ofxAccount.statement.positions
+
+        for p in positionList:
+            positionModel = InvestmentPosition()
+            positionModel.account = accountDBObject
+            positionModel.ticker = self.security_list[p.security]['ticker']
+            positionModel.CUSIP = p.security
+            positionModel.units = p.units
+            positionModel.unit_price = p.unit_price
+            positionModel.save()

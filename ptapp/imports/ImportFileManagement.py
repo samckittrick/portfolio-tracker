@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 from django.core.exceptions import ObjectDoesNotExist
 
 from main.models import Accounts
-from main.types import InvestmentTransactionTypes, InvestmentTransactionIncomeTypes
+from main.types import InvestmentTransactionTypes, InvestmentTransactionIncomeTypes, AccountTypes
 from .models import FileData, AccountData, CashAccountData, CashTransaction, InvestmentAccountData, InvestmentPosition, InvestmentTransaction
 from .exceptions import FileImportException
 
@@ -154,11 +154,11 @@ class OFXFile:
         if(accountType == 0):
             raise FileImportException("Unknown Account Type discovered in file!")
         elif(accountType == 1):
-            return Accounts.CASH_TYPE
+            return AccountTypes.BANK_TYPE
         elif(accountType == 2):
             raise FileImportException("Unsupported Account type CreditCard")
         elif(accountType == 3):
-            return Accounts.STOCK_TYPE
+            return AccountTypes.INVESTMENT_TYPE
 
     #--------------------------------------------------------------------------#
     def readInsertData(self, fileEntry):
@@ -173,9 +173,9 @@ class OFXFile:
         for account in self.ofx.accounts:
             accountType = self.mapAccountType(account.type)
 
-            if(accountType == Accounts.CASH_TYPE ):
+            if(accountType == AccountTypes.BANK_TYPE ):
                 model = CashAccountData()
-            elif(accountType == Accounts.STOCK_TYPE):
+            elif(accountType == AccountTypes.INVESTMENT_TYPE):
                 model = InvestmentAccountData()
             else:
                 raise NotImplementedError("Non Cashtype account detected. We don't handle that yet. ")
@@ -202,11 +202,11 @@ class OFXFile:
 
             # Start saving statement information like balance and positions.
             # If the account type is a cash one, add the fields specific to cash accounts
-            if(accountType == Accounts.CASH_TYPE):
+            if(accountType == AccountTypes.BANK_TYPE):
                 model.balance = account.statement.balance
                 model.balance_date = account.statement.balance_date
             # If it's a stock type, add the fields specific to stock types
-            elif(accountType == Accounts.STOCK_TYPE):
+            elif(accountType == AccountTypes.INVESTMENT_TYPE):
                 model.position_date = account.statement.end_date
 
                 # get a list of securities referenced in this document
@@ -218,9 +218,9 @@ class OFXFile:
             model.save()
 
             # Start saving transactions and positions
-            if(accountType == Accounts.CASH_TYPE):
+            if(accountType == AccountTypes.BANK_TYPE):
                 self.parseCashTransactions(account, model)
-            elif(accountType == Accounts.STOCK_TYPE):
+            elif(accountType == AccountTypes.INVESTMENT_TYPE):
                 self.parseStockPositionData(account, model)
                 self.parseInvestmentTransactionData(account, model)
             else:
@@ -312,7 +312,6 @@ class OFXFile:
         transactionList = ofxAccount.statement.transactions
 
         for t in transactionList:
-            print(vars(t))
             transactionModel = InvestmentTransaction()
             transactionModel.account = accountDBObject
 

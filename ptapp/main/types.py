@@ -1,5 +1,20 @@
 from enum import IntEnum
 
+################################################################################
+# The different types of accounts we can have
+################################################################################
+class AccountTypes(IntEnum):
+    # Cash Bank Accounts
+    BANK_TYPE = 1
+    # Investment Accounts
+    INVESTMENT_TYPE = 2
+
+    #----------------------------------------------------------------------#
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name) for key in cls]
+
+
 ###########################################################################
 # The different types of transactions and the string that represents them
 ###########################################################################

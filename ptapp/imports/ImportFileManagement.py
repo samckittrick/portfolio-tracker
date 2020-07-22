@@ -6,7 +6,8 @@ from datetime import datetime, timezone, timedelta
 from django.core.exceptions import ObjectDoesNotExist
 
 from main.models import Accounts
-from .models import FileData, AccountData, CashAccountData, CashTransaction
+from main.types import InvestmentTransactionTypes, InvestmentTransactionIncomeTypes, AccountTypes
+from .models import FileData, AccountData, CashAccountData, CashTransaction, InvestmentAccountData, InvestmentPosition, InvestmentTransaction
 from .exceptions import FileImportException
 
 #######################################################
@@ -153,11 +154,11 @@ class OFXFile:
         if(accountType == 0):
             raise FileImportException("Unknown Account Type discovered in file!")
         elif(accountType == 1):
-            return Accounts.CASH_TYPE
+            return AccountTypes.BANK_TYPE
         elif(accountType == 2):
             raise FileImportException("Unsupported Account type CreditCard")
         elif(accountType == 3):
-            return Accounts.STOCK_TYPE
+            return AccountTypes.INVESTMENT_TYPE
 
     #--------------------------------------------------------------------------#
     def readInsertData(self, fileEntry):
@@ -172,8 +173,10 @@ class OFXFile:
         for account in self.ofx.accounts:
             accountType = self.mapAccountType(account.type)
 
-            if(accountType == Accounts.CASH_TYPE ):
+            if(accountType == AccountTypes.BANK_TYPE ):
                 model = CashAccountData()
+            elif(accountType == AccountTypes.INVESTMENT_TYPE):
+                model = InvestmentAccountData()
             else:
                 raise NotImplementedError("Non Cashtype account detected. We don't handle that yet. ")
 
@@ -183,7 +186,9 @@ class OFXFile:
             model.routing_number = account.routing_number
             model.institution_name = account.institution.organization
             model.institution_id = account.institution.fid
-            model.currency_symbol = account.curdef
+            # Some QFXs don't define the currency, so we use the default.
+            if(account.curdef is not None):
+                model.currency_symbol = account.curdef
 
             #Match it with an existing account
             match = FileImporter.matchAccountWithExisting(model.account_id, model.institution_id)
@@ -195,33 +200,156 @@ class OFXFile:
                 model.matched = True
                 model.matched_account_id = match
 
+            # Start saving statement information like balance and positions.
             # If the account type is a cash one, add the fields specific to cash accounts
-            if(accountType == Accounts.CASH_TYPE):
+            if(accountType == AccountTypes.BANK_TYPE):
                 model.balance = account.statement.balance
                 model.balance_date = account.statement.balance_date
+            # If it's a stock type, add the fields specific to stock types
+            elif(accountType == AccountTypes.INVESTMENT_TYPE):
+                model.position_date = account.statement.end_date
+
+                # get a list of securities referenced in this document
+                self.security_list = self.getStatementSecurityList(self.ofx)
 
             else:
                 raise FileImportException("Unsupported account type at transaction import")
 
             model.save()
 
-            # Start saving transactions
-            if(accountType == Accounts.CASH_TYPE):
+            # Start saving transactions and positions
+            if(accountType == AccountTypes.BANK_TYPE):
                 self.parseCashTransactions(account, model)
+            elif(accountType == AccountTypes.INVESTMENT_TYPE):
+                self.parseStockPositionData(account, model)
+                self.parseInvestmentTransactionData(account, model)
             else:
                 raise NotImplementedError("Non cash type account detected. We don't handle that yet")
 
     #--------------------------------------------------------------------------#
     def parseCashTransactions(self, ofxAccount, accountDBObject):
-
         stmt = ofxAccount.statement
-
         for tran in stmt.transactions:
-
             transactionModel = CashTransaction()
             transactionModel.date = tran.date
             transactionModel.amount = tran.amount
             transactionModel.ftid = tran.id
             transactionModel.memo = tran.memo
             transactionModel.account = accountDBObject
+            transactionModel.save()
+
+    #--------------------------------------------------------------------------#
+    def getStatementSecurityList(self, ofxObject):
+        """ Investment account statements have a security_list entry that lists basic
+        information about securities referenced in the document. We should parse
+        this and return it as a library of objects for reference when parsing
+        transactions and positions
+
+        We create a dictionary with keys using the ticker symbol (upper case) and
+        the CUSIP id. There won't be too many, so I think it will be ok to have
+        each security appear twice.
+        """
+        security_list = dict()
+
+        for s in ofxObject.security_list:
+            print(dir(s))
+            security_list[s.uniqueid] = {
+                'uniqueId': s.uniqueid,
+                'ticker': s.ticker.upper(),
+                'name': s.name,
+                'memo': s.memo
+            }
+            security_list[s.ticker.upper()] = security_list[s.uniqueid]
+        return security_list
+
+    #--------------------------------------------------------------------------#
+    def parseStockPositionData(self, ofxAccount, accountDBObject):
+        positionList = ofxAccount.statement.positions
+
+        for p in positionList:
+            positionModel = InvestmentPosition()
+            positionModel.account = accountDBObject
+            positionModel.ticker = self.security_list[p.security]['ticker']
+            positionModel.CUSIP = p.security
+            positionModel.units = p.units
+            positionModel.unit_price = p.unit_price
+            positionModel.save()
+
+    #--------------------------------------------------------------------------#
+    def parseInvestmentTransactionData(self, ofxAccount, accountDBObject):
+        #lets set up some mappings to types
+        incomeTypeList = {
+            "CGLONG": InvestmentTransactionIncomeTypes.CGLONG,
+            "CGSHORT": InvestmentTransactionIncomeTypes.CGSHORT,
+            "DIV": InvestmentTransactionIncomeTypes.DIV,
+            "INTEREST": InvestmentTransactionIncomeTypes.INTEREST,
+            "MISC": InvestmentTransactionIncomeTypes.MISC
+        }
+
+        transactionTypeList = {
+            "buydebt": InvestmentTransactionTypes.BUY_DEBT,
+            "buymf": InvestmentTransactionTypes.BUY_MF,
+            "buyopt": InvestmentTransactionTypes.BUY_OPT,
+            "buyother": InvestmentTransactionTypes.BUY_OTHER,
+            "buystock": InvestmentTransactionTypes.BUY_STOCK,
+            "closureopt": InvestmentTransactionTypes.CLOSURE_OPT,
+            "income": InvestmentTransactionTypes.INCOME,
+            "invexpense": InvestmentTransactionTypes.INV_EXPENSE,
+            "jrnlfund": InvestmentTransactionTypes.JRNL_FUND,
+            "jrnlsec": InvestmentTransactionTypes.JRNL_SEC,
+            "margininterest": InvestmentTransactionTypes.MARGIN_INTEREST,
+            "reinvest": InvestmentTransactionTypes.REINVEST,
+            "retofcap": InvestmentTransactionTypes.RET_OF_CAP,
+            "selldebt": InvestmentTransactionTypes.SELL_DEBT,
+            "sellmf": InvestmentTransactionTypes.SELL_MF,
+            "sellopt": InvestmentTransactionTypes.SELL_OPT,
+            "sellother": InvestmentTransactionTypes.SELL_OTHER,
+            "sellstock": InvestmentTransactionTypes.SELL_STOCK,
+            "split": InvestmentTransactionTypes.SPLIT,
+            "transfer": InvestmentTransactionTypes.TRANSFER
+        }
+
+        transactionList = ofxAccount.statement.transactions
+
+        for t in transactionList:
+            transactionModel = InvestmentTransaction()
+            transactionModel.account = accountDBObject
+
+            transactionModel.ftid = t.id
+
+            if(t.type.lower() not in transactionTypeList.keys()):
+                raise FileImportException("Unknown investment transaction type.")
+            elif(t.type.lower() == "transfer"): #I don't know what the tferaction variable does, so if we see a transfer, stop it so i can see. Take this out when i figure it out.
+                raise FileImportException("Transfer type detected, now is the time to figure out the tferaction variable.")
+            else:
+                transactionModel.type = transactionTypeList[t.type.lower()]
+
+            transactionModel.tradeDate = t.tradeDate
+
+            #If there was no settle date, we'll say it settled on the same day as the trade
+            if(t.settleDate is None):
+                transactionModel.settleDate = t.tradeDate
+            else:
+                transactionalModel.settleDate = t.settleDate
+
+            transactionModel.memo = t.memo
+            transactionModel.CUSIP = t.security
+            transactionModel.ticker = self.security_list[t.security]['ticker']
+
+            if(t.income_type is ""):
+                transactionModel.income_type = InvestmentTransactionIncomeTypes.NOTINCOME
+            elif (t.income_type.upper() not in incomeTypeList.keys()):
+                raise FileImportException("Unknown investment transaction income type: %s" % t.income_type.upper())
+            else:
+                transactionModel.income_type = incomeTypeList[t.income_type.upper()]
+
+            transactionModel.units = t.units
+            transactionModel.unit_price = t.unit_price
+
+            if(hasattr(t, 'comission')):
+                transactionModel.comission = t.comission
+
+            transactionModel.fees = t.fees
+            #We keep the total instead of calculating it, because some transactions only use that field.
+            transactionModel.total = t.total
             transactionModel.save()

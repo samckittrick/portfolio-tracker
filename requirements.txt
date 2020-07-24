@@ -3,3 +3,4 @@ redis
 mysqlclient
 ofxparse
 influxable
+django

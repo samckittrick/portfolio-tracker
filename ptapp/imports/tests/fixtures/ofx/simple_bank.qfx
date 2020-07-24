@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?><?OFX OFXHEADER="200" VERSION="202" SECURITY="NONE" OLDFILEUID="NONE" NEWFILEUID="NONE"?>
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <DTSERVER>20200505030656.178</DTSERVER>
+      <LANGUAGE>ENG</LANGUAGE>
+      <FI>
+        <ORG>ScottsBank</ORG>
+        <FID>1234</FID>
+      </FI>
+      <INTU.BID>4321</INTU.BID>
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>0</TRNUID>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <STMTRS>
+        <CURDEF>USD</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>987654321</BANKID>
+          <ACCTID>1111</ACCTID>
+          <ACCTTYPE>SAVINGS</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>20191106000000.000</DTSTART>
+          <DTEND>20200504000000.000</DTEND>
+          <STMTTRN>
+            <TRNTYPE>CREDIT</TRNTYPE>
+            <DTPOSTED>20200417000000.000</DTPOSTED>
+            <TRNAMT>9.66</TRNAMT>
+            <FITID>2020041788</FITID>
+            <MEMO>Monthly Interest Paid</MEMO>
+          </STMTTRN>
+          <STMTTRN>
+            <TRNTYPE>CREDIT</TRNTYPE>
+            <DTPOSTED>20200317000000.000</DTPOSTED>
+            <TRNAMT>9.02</TRNAMT>
+            <FITID>2020031787</FITID>
+            <MEMO>Monthly Interest Paid</MEMO>
+          </STMTTRN>
+          <STMTTRN>
+            <TRNTYPE>CREDIT</TRNTYPE>
+            <DTPOSTED>20200217000000.000</DTPOSTED>
+            <TRNAMT>9.62</TRNAMT>
+            <FITID>2020021786</FITID>
+            <MEMO>Monthly Interest Paid</MEMO>
+          </STMTTRN>
+
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>4285.95</BALAMT>
+          <DTASOF>20200505030656.178</DTASOF>
+        </LEDGERBAL>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>

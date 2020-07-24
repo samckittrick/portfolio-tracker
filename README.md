@@ -1,6 +1,8 @@
 # portfolio-tracker
 Application to track my stock portfolio. Also as a python,flask,investing learning project.
 
+![CI workflow](https://github.com/samckittrick/portfolio-tracker/workflows/CI%20workflow/badge.svg)
+
 **Running with Docker Compose**  
 `sudo docker-compose --file portfolio-tracker-compose.yml up`
 

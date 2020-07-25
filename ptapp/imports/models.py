@@ -1,5 +1,4 @@
 from django.db import models, transaction
-import hashlib
 
 import main
 from main.models import CashAccounts, Accounts
@@ -13,15 +12,6 @@ class FileData(models.Model):
     fileid = models.CharField(max_length=32, primary_key=True)
     filename = models.CharField(max_length=200)
     expiration = models.DateTimeField()
-
-    #--------------------------------------------------------------------------#
-    def calculatefilehash(file):
-        """ Calculate the hash of a file for inserting into this model"""
-        hasher = hashlib.md5()
-        for chunk in file.chunks():
-            hasher.update(chunk)
-        hash = hasher.hexdigest()
-        return hash
 
     #--------------------------------------------------------------------------#
     def completeImportFile(self):

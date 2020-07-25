@@ -1,5 +1,6 @@
 # portfolio-tracker
-Application to track my stock portfolio. Also as a python,flask,investing learning project.
+Application to track my stock portfolio. Also as a python,flask,investing learning project.  
+![CI workflow](https://github.com/samckittrick/portfolio-tracker/workflows/CI%20workflow/badge.svg)
 
 **Running with Docker Compose**  (This needs more work still)  
 This is a multistep process, depending on what needs to be done.
@@ -41,6 +42,7 @@ Superuser created successfully.
 root@grommit:/opt/app/ptapp# exit
 ```  
 4. Rerun the container to start the server `sudo docker run --rm --network host -it foo`
+
 
 **Running the Django App Separately**  
 ```
@@ -85,6 +87,12 @@ Configuration happens through a series of environment variables. These are passe
 **.env file** For use by docker-compose
 ```
 PORTFOLIO_TRACKER_DIR=/home/wallace/portfolio-tracker/testpersistentdir/
+```
+
+## Development and Testing
+For testing and development, you need to install a few extra requirements
+```
+pip install -r devrequirements.txt
 ```
 
 ## Building Bootstrap with custom themes

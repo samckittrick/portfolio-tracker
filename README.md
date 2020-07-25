@@ -52,5 +52,11 @@ Configuration happens through a series of environment variables. These are passe
 PORTFOLIO_TRACKER_DIR=/home/wallace/portfolio-tracker/testpersistentdir/
 ```
 
+## Development and Testing
+For testing and development, you need to install a few extra requirements
+```
+pip install -r devrequirements.txt
+```
+
 ## Building Bootstrap with custom themes
 In order to build a custom themed bootstrap, I place `custom.scss` in the boostrap directory. Then I modify the `css-compile` task in `packages.json` to point to custom.css instead of bootstrap.css. Once you run `npm run dist` or `npm run css` the resultant css and minified css files are in the dist directory.

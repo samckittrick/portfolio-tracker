@@ -1,6 +1,6 @@
 from ofxparse import OfxParser
 from pathlib import Path
-import json
+import json, hashlib
 from datetime import datetime, timezone, timedelta
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -51,10 +51,21 @@ class FileImporter:
         else:
             self.fileParser = OFXFile(fileobj = fileobj)
 
-        self.fileHash = FileData.calculatefilehash(fileobj)
+        self.fileHash = FileImporter.calculatefilehash(fileobj)
+
+    #--------------------------------------------------------------------------#
+    @staticmethod
+    def calculatefilehash(file):
+        """ Calculate the hash of a file for inserting into this model"""
+        hasher = hashlib.md5()
+        for chunk in file.chunks():
+            hasher.update(chunk)
+        hash = hasher.hexdigest()
+        return hash
 
     #---------------------------------------------------------------------------#
-    def getFileType(self, filename):
+    @staticmethod
+    def getFileType(filename):
         """
         Determine what type of file this is.
 
@@ -64,9 +75,9 @@ class FileImporter:
 
         extension = Path(filename).suffix
         if((extension.lower() == ".qfx") or (extension.lower() == ".ofx")):
-            return self.FILETYPE_QFX
+            return FileImporter.FILETYPE_QFX
         else:
-            return self.FILETYPE_UNKNOWN
+            return FileImporter.FILETYPE_UNKNOWN
 
     #--------------------------------------------------------------------------#
     def importFile(self):

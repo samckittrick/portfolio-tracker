@@ -1,5 +1,7 @@
 from django.db import models
 from .types import InvestmentTransactionTypes, InvestmentTransactionIncomeTypes, AccountTypes
+import decimal
+
 # Create your models here.
 
 #################################################
@@ -92,6 +94,14 @@ class InvestmentAccounts(Accounts):
     # We need to know when the
     position_date = models.DateTimeField(null=True)
 
+    #--------------------------------------------------------------------------#
+    def calculateValue(self):
+        value = decimal.Decimal(0.00)
+        positions = self.positions.all()
+        for p in positions:
+            value += round(p.unit_price * decimal.Decimal(p.units), 2)
+        return value
+
 ################################################################################
 # InvestmentPositions - List of security positions for a specific account.
 ###############################################################################
@@ -104,7 +114,7 @@ class InvestmentPosition(models.Model):
 
     # Depending on the broker, it's possible to hold partial shares. So we use a float.
     units = models.FloatField(default=0)
-    unit_price = models.FloatField(default=0)
+    unit_price = models.DecimalField(max_digits=13, decimal_places=2, default=0)
 
     class Meta:
         constraints = [
@@ -128,10 +138,10 @@ class InvestmentTransaction(models.Model):
     ticker = models.CharField(max_length=8)
     income_type = models.IntegerField(choices = InvestmentTransactionIncomeTypes.choices())
     units = models.FloatField(default=0)
-    unit_price = models.FloatField(default=0)
-    comission = models.FloatField(default=0)
-    fees = models.FloatField(default=0)
-    total = models.FloatField(default=0)
+    unit_price = models.DecimalField(max_digits=13, decimal_places=2, default=0)
+    comission = models.DecimalField(max_digits=13, decimal_places=2, default=0)
+    fees = models.DecimalField(max_digits=13, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=13, decimal_places=2, default=0)
 
     class Meta:
         constraints = [

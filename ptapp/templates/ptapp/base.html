@@ -18,7 +18,7 @@
       top: 0;
       bottom: 0;
       left: 0;
-      padding: 48px 0 0;
+      padding: 48px 0 0; /*Height of the top navbar */
     }
 
     .sidebar-sticky {
@@ -30,6 +30,10 @@
         position: -webkit-sticky;
         position: sticky;
       }
+    }
+
+    [role="main"] {
+      padding-top: 48px; /* Space for fixed navbar */
     }
 
     </style>
@@ -63,7 +67,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="#">
+                <a class="nav-link active" href="{% url 'main:accountlisting' %}">
                   <span data-feather="list"></span>
                   Account Listing
                 </a>
@@ -89,7 +93,7 @@
         </nav>
 
         <!-- Page content goes here -->
-        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4 mt-3">.
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
           {% block content %}
           {% endblock %}
         </main>

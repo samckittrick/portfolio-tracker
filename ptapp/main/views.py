@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 from .models import Accounts
-from .types import AccountTypes
+from .types import AccountTypes, InvestmentTransactionTypes
 from .FinanceAnalysis import getNetWorth
 
 # Create your views here.
@@ -69,6 +69,7 @@ def accountListing(request):
             for t in a.getSubclass().transactions.all():
                 tdata = {
                     'date': t.settleDate,
+                    'type': InvestmentTransactionTypes.mapTypeToName(t.type),
                     'amount': t.total,
                     'memo': t.memo
                 }

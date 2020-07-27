@@ -67,6 +67,34 @@ class InvestmentTransactionTypes(IntEnum):
     def choices(cls):
         return [(key.value, key.name) for key in cls]
 
+    #----------------------------------------------------------------------#
+    @classmethod
+    def mapTypeToName(cls, type):
+        typeMappings = {
+            cls.BUY_DEBT: 'Buy Debt Security',
+            cls.BUY_MF: 'Buy Mutual Fund',
+            cls.BUY_OPT: 'Buy Option',
+            cls.BUY_OTHER: 'Buy Other Security',
+            cls.BUY_STOCK: 'Buy Stock',
+            cls.CLOSURE_OPT: 'Close Option',
+            cls.INCOME: 'Income',
+            cls.INV_EXPENSE: 'Investment Expense',
+            cls.JRNL_FUND: 'Journal Fund',
+            cls.JRNL_SEC: 'Journal Security',
+            cls.MARGIN_INTEREST: 'Margin Interest',
+            cls.REINVEST: 'Reinvest',
+            cls.RET_OF_CAP: 'Return of Capital',
+            cls.SELL_DEBT: 'Sell Debt Security',
+            cls.SELL_MF: 'Sell Mutual Fund',
+            cls.SELL_OPT: 'Sell Option',
+            cls.SELL_OTHER: 'Sell Other Security',
+            cls.SELL_STOCK: 'Sell Stock',
+            cls.SPLIT: 'Split Security',
+            cls.TRANSFER: 'Transfer'
+        }
+
+        return typeMappings[type]
+
 ############################################################################
 # Different Types of income for an investment transaction
 ############################################################################

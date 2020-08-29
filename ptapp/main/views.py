@@ -82,3 +82,17 @@ def accountListing(request):
     }
 
     return render(request, 'main/accountlist.html', context)
+
+@login_required
+def portfolio(request):
+    positions = [ {
+        'ticker': 'AAPL',
+        'name': 'Apple Inc.',
+        'quantity': 156,
+        'price': 56.12,
+        'value': 8754.72
+    }]
+    context = {
+        'positionList': positions
+    }
+    return render(request, 'main/portfolio.html', context)

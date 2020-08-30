@@ -1,5 +1,4 @@
-yfinance
-redis
+yahooquery
 mysqlclient
 ofxparse
 influxable

@@ -6,21 +6,24 @@
     <tr>
       <th>Ticker</th>
       <th>Name</th>
+      <th>Account</th>
       <th>Quantity</th>
       <th>Price</th>
       <th>Value</th>
     </tr>
   </thead>
 
-  <tr>
+
     {% for p in positionList %}
+    <tr>
       <td>{{ p.ticker }}</td>
       <td>{{ p.name }}</td>
-      <td>{{ p.quantity }}</td>
-      <td>{{ p.price }}</td>
-      <td>{{ p.value }}</td
+      <td>{{ p.account }}</td>
+      <td>{{ p.quantity|floatformat }}</td>
+      <td>{{ p.price|floatformat:2 }}</td>
+      <td>{{ p.value|floatformat:2 }}</td>
+    </tr>
     {% endfor %}
-  </tr>
 </table>
 
 {% endblock %}

@@ -1,0 +1,29 @@
+{% extends "ptapp/base.html" %}
+{% block content %}
+
+<table class="table table-striped table-bordered table-hover">
+  <thead class="thead-light">
+    <tr>
+      <th>Ticker</th>
+      <th>Name</th>
+      <th>Account</th>
+      <th>Quantity</th>
+      <th>Price</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+
+
+    {% for p in positionList %}
+    <tr>
+      <td>{{ p.ticker }}</td>
+      <td>{{ p.name }}</td>
+      <td>{{ p.account }}</td>
+      <td>{{ p.quantity|floatformat }}</td>
+      <td>{{ p.price|floatformat:2 }}</td>
+      <td>{{ p.value|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

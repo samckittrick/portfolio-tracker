@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
-from .models import Accounts
+from .models import Accounts, InvestmentPosition
 from .types import AccountTypes, InvestmentTransactionTypes
 from .FinanceAnalysis import getNetWorth
+from .DataSources import DataSourceFactory
 
 # Create your views here.
 @login_required
@@ -82,3 +83,32 @@ def accountListing(request):
     }
 
     return render(request, 'main/accountlist.html', context)
+
+@login_required
+def portfolio(request):
+    stockLib = DataSourceFactory.get_StockLibrary()
+
+    positionQuerySet = InvestmentPosition.objects.all()
+    positions = list()
+    for p in positionQuerySet:
+        priceData = stockLib.getCurrentStockPrices(p.ticker)
+        if(priceData == None):
+            continue
+
+        totalValue = priceData['price'] * p.units
+        positionEntry = {
+            'ticker': p.ticker,
+            'name': priceData['name'],
+            'account': str(p.account),
+            'quantity': p.units,
+            'price': priceData['price'],
+            'value': totalValue
+        }
+        positions.append(positionEntry)
+
+    print(positions)
+
+    context = {
+        'positionList': positions
+    }
+    return render(request, 'main/portfolio.html', context)
